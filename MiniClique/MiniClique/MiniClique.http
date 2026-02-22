@@ -1,0 +1,6 @@
+@MiniClique_HostAddress = http://localhost:5058
+
+GET {{MiniClique_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

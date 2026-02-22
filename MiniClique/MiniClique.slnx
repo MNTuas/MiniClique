@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="MiniClique/MiniClique.csproj" />
+  <Project Path="MiniClique_Model/MiniClique_Model.csproj" />
+  <Project Path="MiniClique_Repository/MiniClique_Repository.csproj" />
+  <Project Path="MiniClique_Service/MiniClique_Service.csproj" />
+</Solution>
