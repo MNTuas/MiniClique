@@ -1,0 +1,17 @@
+﻿using MiniClique_Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace MiniClique_Repository.Interface
+{
+    public interface IUserMatchesRepository
+    {
+        Task<IEnumerable<UserMatches>> GetAllUserMatchesAsync();
+        Task<UserMatches> GetUserMatchesById(string id);
+        Task<UserMatches> GetUserMatchesByEmail(string email);
+        Task CreateAsync(UserMatches userMatches);
+    }
+}

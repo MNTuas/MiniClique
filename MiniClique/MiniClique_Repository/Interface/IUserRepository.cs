@@ -21,5 +21,6 @@ namespace MiniClique_Repository.Interface
         Task<IEnumerable<User>> GetRandomUser();
         Task<User> GetUserByIdToUpdate(string id);
         Task<IEnumerable<User>> SearchUser(string keyword);
+        Task<List<User>> GetBothUserByEmail(string fromEmail, string toEmail);
     }
 }

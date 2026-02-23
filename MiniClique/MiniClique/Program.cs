@@ -32,6 +32,10 @@ builder.Services.Configure<DatabaseSettings>
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserLikesRepository, UserLikesRepository>();
+builder.Services.AddScoped<IUserLikesService, UserLikesService>();
+builder.Services.AddScoped<IUserMatchesRepository, UserMatchesRepository>();
+//builder.Services.AddScoped<IUserMatchesService, UserMatchesService>();
 
 
 var app = builder.Build();

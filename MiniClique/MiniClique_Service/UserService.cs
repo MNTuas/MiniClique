@@ -31,7 +31,7 @@ namespace MiniClique_Service
                 return new Result<User>
                 {
                     Success = false,
-                    ErrorMessage = "User already exists"
+                    Message = "User already exists"
                 };
             }
 
@@ -55,7 +55,7 @@ namespace MiniClique_Service
             {
                 Success = true,
                 Data = newUser,
-                ErrorMessage = "Create user successfull"
+                Message = "Create user successfull"
                 
             };
         }
@@ -93,7 +93,7 @@ namespace MiniClique_Service
                 {
                     Success = false,
                     Data = null,
-                    ErrorMessage = "User not found"
+                    Message = "User not found"
                 };
             }
 
@@ -114,7 +114,7 @@ namespace MiniClique_Service
             {
                 Success = true,
                 Data = response,
-                ErrorMessage = null
+                Message = null
             };
         }
     }

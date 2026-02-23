@@ -5,6 +5,7 @@ using MiniClique_Model.Response;
 using MiniClique_Repository.Helper;
 using MiniClique_Repository.Interface;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -136,6 +137,52 @@ namespace MiniClique_Repository
             };
             var results = await _userCollection.Aggregate<User>(pipeline).ToListAsync();
             return results;
+        }
+
+        public async Task<List<User>> GetBothUserByEmail(string fromEmail, string toEmail)
+        {
+            var a = fromEmail.Trim().ToLowerInvariant();
+            var b = toEmail.Trim().ToLowerInvariant();
+
+            var pipeline = new[]
+            {
+             new BsonDocument("$match",
+            new BsonDocument("Email",
+                new BsonDocument("$in", new BsonArray { a, b })
+            )
+        ),
+        new BsonDocument("$group",
+            new BsonDocument
+            {
+                { "_id", BsonNull.Value },
+                { "users", new BsonDocument("$addToSet", "$$ROOT") },
+                { "emails", new BsonDocument("$addToSet", "$Email") }
+            }
+        ),
+        new BsonDocument("$match",
+            new BsonDocument("$expr",
+                new BsonDocument("$eq",
+                    new BsonArray
+                    {
+                        new BsonDocument("$size", "$emails"),
+                        2
+                    }
+                )
+            )
+        )
+    };
+
+            var result = await _userCollection
+                .Aggregate<BsonDocument>(pipeline)
+                .FirstOrDefaultAsync();
+
+            if (result == null)
+                return null;
+
+            return result["users"]
+                .AsBsonArray
+                .Select(u => BsonSerializer.Deserialize<User>(u.AsBsonDocument))
+                .ToList();
         }
 
     }
