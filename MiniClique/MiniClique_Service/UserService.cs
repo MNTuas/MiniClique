@@ -1,304 +1,121 @@
-﻿//using MiniClique_Model;
-//using MiniClique_Repository.Interface;
-//using MiniClique_Service.Interface;
-//using MiniClique_Service.Shared;
-//using MongoDB.Driver;
-//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
+﻿using MiniClique_Model;
+using MiniClique_Model.Request;
+using MiniClique_Model.Response;
+using MiniClique_Repository.Interface;
+using MiniClique_Service.Interface;
+using MiniClique_Service.Shared;
+using MongoDB.Driver;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-//namespace MiniClique_Service
-//{
-//    public class UserService : IUserService
-//    {
-//        private readonly IUserRepository _userRepository;
+namespace MiniClique_Service
+{
+    public class UserService : IUserService
+    {
+        private readonly IUserRepository _userRepository;
 
-//        public UserService(IUserRepository userRepository)
-//        {
-//            _userRepository = userRepository;
-//        }
+        public UserService(IUserRepository userRepository)
+        {
+            _userRepository = userRepository;
+        }
 
-//        public async Task<UserGetAllCount> GetAllUserAsync()
-//        {
-//            var listUser = await _userRepository.GetAllUserAsync();
+        public async Task<Result<User>> CreateAsync(CreateUserRequest user)
+        {
+            var exstingUser = await _userRepository.GetUserByEmail(user.Email);
 
-//            var newUser = new UserGetAllCount
-//            {
-//                TotalUser = listUser.Count(),
-//                Users = listUser
+            if (exstingUser != null)
+            {
+                return new Result<User>
+                {
+                    Success = false,
+                    ErrorMessage = "User already exists"
+                };
+            }
 
-//            };
+            var newUser = new User
+            {
+                Email = user.Email,
+                FullName = user.FullName,
+                Birthday = user.Birthday ?? "20-01-1989",
+                RoleId = "699c5c33b7075728685d6c9d",
+                Bio = user.Bio ?? "This is my bio",
+                Create_At = DateTime.UtcNow,
+                Gender = user.Gender,
+                Status = "Active",
+                Password = user.Password,
+                Picture = user.Picture ?? "https://res.cloudinary.com/depqidlgv/image/upload/v1771854520/455646505_10226057102397556_5136531480083115955_n_w9rwtc.jpg",
+            };
 
-//            return newUser;
+            await _userRepository.CreateAsync(newUser);
 
-//        }
+            return new Result<User>
+            {
+                Success = true,
+                Data = newUser,
+                ErrorMessage = "Create user successfull"
+                
+            };
+        }
 
-//        public class UserGetAllCount
-//        {
-//            public IEnumerable<UserGetAllResponse> Users { get; set; }
-//            public int TotalUser { get; set; }
-//        }
+        public async Task<IEnumerable<GetUserResponse>> GetAllUserAsync()
+        {
+            var users = await _userRepository.GetAllUserAsync(); 
 
-//        public async Task<Result<UserGetByIdResponse>> GetUserById(string id)
-//        {
-//            try
-//            {
-//                if (!string.IsNullOrEmpty(id))
-//                {
-//                    var userId = await _userRepository.GetUserById(id);
-//                    return new Result<UserGetByIdResponse>
-//                    {
-//                        Success = true,
-//                        Data = userId,
-//                    };
-//                }
-//                return new Result<UserGetByIdResponse>
-//                {
-//                    Success = false,
-//                    ErrorMessage = "Id is not be null",
-//                };
-//            }
-//            catch (Exception ex)
-//            {
-//                return new Result<UserGetByIdResponse>
-//                {
-//                    Success = false,
-//                    ErrorMessage = ex.Message,
-//                };
-//            }
-//        }
+            if (users == null)
+                return Enumerable.Empty<GetUserResponse>();
 
-//        public async Task<Result<User>> UpdateUser(string id, UserUpdateRequest userUpdateRequest)
-//        {
-//            try
-//            {
-//                var userId = _httpContextAccessor.HttpContext?.User.FindFirst(MySetting.CLAIM_USERID);
-//                var existingUser = await _userRepository.GetUserByIdToUpdate(id);
-//                if (existingUser == null)
-//                {
-//                    return new Result<User>
-//                    {
-//                        Success = false,
-//                        ErrorMessage = "User not exists"
-//                    };
-//                }
-//                if (existingUser.Id == userId.Value)
-//                {
-//                    _mapper.Map(userUpdateRequest, existingUser);
-//                    await _userRepository.UpdateUser(id, existingUser);
-//                    return new Result<User>
-//                    {
-//                        Success = true,
-//                        ErrorMessage = "Update Successfull",
-//                        Data = existingUser
-//                    };
-//                }
-//                return new Result<User>
-//                {
-//                    Success = false,
-//                    ErrorMessage = "You can not access this function",
-//                };
-//            }
-//            catch (Exception ex)
-//            {
-//                return new Result<User>
-//                {
-//                    Success = false,
-//                    ErrorMessage = ex.Message
-//                };
-//            }
+            var responses = users.Select(u => new GetUserResponse
+            {
+                Id = u.Id,
+                FullName = u.FullName,
+                Email = u.Email,
+                Picture = u.Picture,
+                Bio = u.Bio,
+                Birthday = u.Birthday,
+                Create_At = u.Create_At,
+                Gender = u.Gender,
+                Status = u.Status
+            });
 
-//        }
+            return responses;
+        }
 
-//        public async Task<IEnumerable<object>> GetUserPostById(string id)
-//        {
-//            try
-//            {
-//                var userPosts = await _userRepository.GetUserPostById(id);
+        public async Task<Result<GetUserResponse>> GetUserById(string id)
+        {
+            var user = await _userRepository.GetUserById(id);
 
-//                if (userPosts == null)
-//                {
-//                    return Enumerable.Empty<object>();
-//                }
+            if (user == null)
+            {
+                return new Result<GetUserResponse>
+                {
+                    Success = false,
+                    Data = null,
+                    ErrorMessage = "User not found"
+                };
+            }
 
-//                // Trả về một danh sách các Anonymous Type với các trường cần thiết
-//                var newUserPosts = userPosts.Select(post => new
-//                {
-//                    Post_Id = post.Id,
-//                    UserPost = post.userPost
-//                });
+            var response = new GetUserResponse
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                Picture = user.Picture,
+                Bio = user.Bio, 
+                Birthday = user.Birthday,
+                Create_At = user.Create_At,
+                Gender = user.Gender,
+                Status = user.Status
+            };
 
-//                return newUserPosts;
-//            }
-//            catch (Exception ex)
-//            {
-//                throw new Exception("Something went wrong: " + ex.Message);
-//            }
-//        }
-
-//        //lấy suggest user (proccessing)
-//        public async Task<IEnumerable<object>> GetRandomUser(string currentUserId)
-//        {
-//            var users = await _userRepository.GetRandomUser();
-//            var newUsers = new List<object>();
-
-//            foreach (var user in users)
-//            {
-//                bool isFollowing = await _userFollowRepository.IsFollowingAsync(currentUserId, user.Id);
-//                newUsers.Add(new
-//                {
-//                    User_Id = user.Id,
-//                    FullName = user.FullName,
-//                    Picture = user.Picture,
-//                    IsFollowing = isFollowing
-//                });
-//            }
-
-//            return newUsers;
-//        }
-
-//        //lấy thông tin user đang login
-//        public async Task<Result<UserGetByIdResponse>> GetUserLogin()
-//        {
-//            try
-//            {
-
-//                var idClaim = _httpContextAccessor.HttpContext.User.FindFirst(MySetting.CLAIM_USERID);
-
-//                if (idClaim == null)
-//                {
-//                    return new Result<UserGetByIdResponse>
-//                    {
-//                        Success = false,
-//                        ErrorMessage = "User claims are missing"
-//                    };
-//                }
-
-//                var claimid = idClaim.Value;
-
-//                var user = await _userRepository.GetUserByLogin(claimid);
-//                if (user == null)
-//                {
-//                    return new Result<UserGetByIdResponse>
-//                    {
-//                        Success = false,
-//                        ErrorMessage = "User not found"
-//                    };
-//                }
-
-//                return new Result<UserGetByIdResponse>
-//                {
-//                    Success = true,
-//                    Data = user,
-
-//                };
-//            }
-//            catch (Exception ex)
-//            {
-//                return new Result<UserGetByIdResponse>
-//                {
-//                    Success = false,
-//                    ErrorMessage = "Something wrong!!!"
-//                };
-//            }
-//        }
-
-//        public async Task<IEnumerable<object>> GetUserPostLogin()
-//        {
-//            var idClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(MySetting.CLAIM_USERID);
-
-//            if (idClaim == null)
-//            {
-//                throw new Exception("User ID claim not found.");
-//            }
-
-//            try
-//            {
-//                var userId = idClaim.Value;
-//                var userPosts = await _userRepository.GetUserPostByLogin(userId);
-
-//                if (userPosts == null)
-//                {
-//                    return Enumerable.Empty<object>();
-//                }
-
-//                // Trả về một danh sách các Anonymous Type với các trường cần thiết
-//                var newUserPosts = userPosts.Select(post => new
-//                {
-//                    Post_Id = post.Id,
-//                    UserPost = post.userPost
-//                });
-
-//                return newUserPosts;
-//            }
-//            catch (Exception ex)
-//            {
-//                throw new Exception("Something went wrong: " + ex.Message);
-//            }
-//        }
-
-//        public async Task<IEnumerable<object>> SearchUser(string keyword, string currentUserId)
-//        {
-//            var users = await _userRepository.SearchUser(keyword);
-//            if (users == null)
-//            {
-//                return Enumerable.Empty<object>();
-//            }
-
-//            var resultList = new List<object>();
-//            foreach (var user in users)
-//            {
-//                bool isFollowing = await _userFollowRepository.IsFollowingAsync(currentUserId, user.Id);
-//                resultList.Add(new
-//                {
-//                    id = user.Id,
-//                    fullName = user.FullName,
-//                    picture = user.Picture,
-//                    gender = user.Gender,
-//                    create_At = user.Create_At,
-//                    roleId = user.RoleId,
-//                    birthday = user.Birthday,
-//                    IsFollowing = isFollowing
-//                });
-//            }
-
-//            return resultList;
-//        }
-
-//        public async Task<Result<User>> DeleteUser(string id)
-//        {
-//            var user = await _userRepository.GetUserById(id);
-//            if (user == null)
-//            {
-//                return new Result<User>()
-//                {
-//                    Success = false,
-//                    ErrorMessage = "Not found"
-//                };
-//            }
-//            await _userRepository.DeleteUser(id);
-//            return new Result<User>()
-//            {
-//                Success = true,
-//                ErrorMessage = "Delete sucessfull"
-//            };
-//        }
-
-//        Task<User> IUserService.GetAllUserAsync()
-//        {
-//            throw new NotImplementedException();
-//        }
-
-//        Task<Result<User>> IUserService.GetUserById(string id)
-//        {
-//            throw new NotImplementedException();
-//        }
-
-//        Task<Result<User>> IUserService.GetUserLogin()
-//        {
-//            throw new NotImplementedException();
-//        }
-//    }
-//}
+            return new Result<GetUserResponse>
+            {
+                Success = true,
+                Data = response,
+                ErrorMessage = null
+            };
+        }
+    }
+}

@@ -4,12 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace MiniClique_Model
+namespace MiniClique_Model.Response
 {
-    public class User
+    public class GetUserResponse
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -20,12 +19,7 @@ namespace MiniClique_Model
         public string? Bio { get; set; }
         public string? Picture { get; set; }
         public string? Status { get; set; }
-        public string? Password { get; set; }
-
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string? RoleId { get; set; }
         public string Email { get; set; } = string.Empty;
         public DateTime? Create_At { get; set; }
-
     }
 }

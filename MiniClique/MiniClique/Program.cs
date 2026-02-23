@@ -1,6 +1,10 @@
 
 
+using MiniClique_Repository;
 using MiniClique_Repository.Helper;
+using MiniClique_Repository.Interface;
+using MiniClique_Service;
+using MiniClique_Service.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +29,9 @@ builder.Services.Configure<DatabaseSettings>
 (
     builder.Configuration.GetSection("MyDb")
 );
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 
 var app = builder.Build();
