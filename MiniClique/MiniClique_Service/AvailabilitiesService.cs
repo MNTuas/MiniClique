@@ -119,6 +119,110 @@ namespace MiniClique_Service
             };
         }
 
+        public async Task<Result<Availabilities>> UpdateAsync(string id, Availabilities request)
+        {
+            // 1️⃣ Kiểm tra match tồn tại
+            var existingMatch = await _userMatchesRepository
+                .GetUserMatchesById(request.MatchId);
+
+            if (existingMatch == null)
+            {
+                return new Result<Availabilities>
+                {
+                    Success = false,
+                    Message = "Match not found"
+                };
+            }
+
+            // 2️⃣ Tìm availability của user trong match
+            var existingAvailability = await _AvailabilitiesRepository
+                .GetAvailabilitiesById(id);
+
+            if (existingAvailability == null)
+            {
+                return new Result<Availabilities>
+                {
+                    Success = false,
+                    Message = "Availability not found"
+                };
+            }
+
+            // 3️⃣ Update slot
+            existingAvailability.MatchId = request.MatchId;
+            existingAvailability.UserEmail = request.UserEmail;
+            existingAvailability.AvailableTimes = request.AvailableTimes?
+                .Select(x => new Slots
+                {
+                    Date = x.Date.Date,
+                    StartTime = x.StartTime
+                }).ToList();
+
+            existingAvailability.Create_At = DateTime.UtcNow;
+
+            await _AvailabilitiesRepository.UpdateAvailabilities(existingAvailability.Id, request);
+
+            // 4️⃣ Kiểm tra đủ 2 user chưa
+            var users = await _AvailabilitiesRepository
+                .GetMatchIfTwoUsers(request.MatchId);
+
+            if (users == null)
+            {
+                return new Result<Availabilities>
+                {
+                    Success = true,
+                    Data = existingAvailability,
+                    Message = "Availability updated. Waiting for second user."
+                };
+            }
+
+            // 5️⃣ Tìm slot trùng
+            var firstMatchedSlot = users[0].AvailableTimes
+                .IntersectBy(
+                    users[1].AvailableTimes
+                        .Select(x => new { x.Date, x.StartTime }),
+                    x => new { x.Date, x.StartTime }
+                )
+                .OrderBy(x => x.Date)
+                .ThenBy(x => x.StartTime)
+                .FirstOrDefault();
+
+            if (firstMatchedSlot == null)
+            {
+                return new Result<Availabilities>
+                {
+                    Success = true,
+                    Data = existingAvailability,
+                    Message = "Both users submitted but no matching time found."
+                };
+            }
+            var existingSchedule = await _matchesScheduleRepository
+                .GetMatchesScheduleById(request.MatchId);
+
+            if (existingSchedule == null)
+            {
+                var matchSchedule = new MatchesSchedule
+                {
+                    MatchId = request.MatchId,
+                    UserAEmail = users[0].UserEmail,
+                    UserBEmail = users[1].UserEmail,
+                    MatchesTime = new List<Slots> { firstMatchedSlot },
+                    Status = true,
+                    Create_At = DateTime.UtcNow,
+                    Update_At = DateTime.UtcNow
+                };
+
+                await _matchesScheduleRepository.CreateAsync(matchSchedule);
+            }
+
+
+            return new Result<Availabilities>
+            {
+                Success = true,
+                Data = existingAvailability,
+                Message = "Availability updated and schedule recalculated."
+            };
+        }
+
         public Task<IEnumerable<Availabilities>> GetAllAvailabilitiesAsync()
         {
             var Availabilities = _AvailabilitiesRepository.GetAllAvailabilitiesAsync();

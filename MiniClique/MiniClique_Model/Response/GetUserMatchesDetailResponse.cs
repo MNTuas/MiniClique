@@ -6,20 +6,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MiniClique_Model
+namespace MiniClique_Model.Response
 {
-    public class MatchesSchedule
+    public class GetUserMatchesDetailResponse
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string? MatchId { get; set; }
         public string? UserAEmail { get; set; }
         public string? UserBEmail { get; set; }
-        public List<Slots>? MatchesTime { get; set; }
-        public bool? Status { get; set; }
         public DateTime? Create_At { get; set; }
-        public DateTime? Update_At { get; set; }
-    }    
+        public List<Availabilities> Availabilities { get; set; }
+        public List<MatchesSchedule> MatchesSchedule { get; set; }
+    }
 }

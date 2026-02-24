@@ -48,5 +48,19 @@ namespace MiniClique.Controllers
                 return BadRequest(users);
             }
         }
+
+        [HttpPut("Update_User_Availabilities/{id}")]
+        public async Task<IActionResult> UpdateAvailabilities(string id, Availabilities Availabilities)
+        {
+            var users = await _AvailabilitiesService.UpdateAsync(id,Availabilities);
+            if (users.Success)
+            {
+                return Ok(users);
+            }
+            else
+            {
+                return BadRequest(users);
+            }
+        }
     }
 }

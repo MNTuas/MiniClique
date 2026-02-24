@@ -15,5 +15,6 @@ namespace MiniClique_Repository.Interface
         //Task<List<Availabilities>> GetBothAvailabilitiesByEmail(string fromEmail, string toEmail);
         Task CreateAsync(Availabilities Availabilities);
         Task<List<Availabilities>?> GetMatchIfTwoUsers(string matchId);
+        Task UpdateAvailabilities(string id, Availabilities availabilities);
     }
 }

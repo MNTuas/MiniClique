@@ -14,5 +14,6 @@ namespace MiniClique_Service.Interface
         Task<Result<Availabilities>> CreateAsync(Availabilities Availabilities);
         Task<Result<Availabilities>> GetAvailabilitiesById(string id);
         //Task<IEnumerable<Availabilities>> GetAvailabilitiesByEmail(string email);
+        Task<Result<Availabilities>> UpdateAsync(string id, Availabilities request);
     }
 }

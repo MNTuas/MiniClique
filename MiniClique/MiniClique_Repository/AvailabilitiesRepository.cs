@@ -50,6 +50,9 @@ namespace MiniClique_Repository
 
             return null;
         }
+
+        public async Task UpdateAvailabilities(string id, Availabilities availabilities) =>
+            await _AvailabilitiesCollection.FindOneAndReplaceAsync(a => a.Id == availabilities.Id, availabilities);
     }
 }
 

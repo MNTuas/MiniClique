@@ -36,5 +36,33 @@ namespace MiniClique.Controllers
             }
             return Ok(users);
         }
+
+        [HttpGet("Get_User_Matches_Detail_By_EmailId")]
+        public async Task<IActionResult> GetUserMatchesDetailByEmailAndId(string id, string email)
+        {
+            var users = await _UserMatchesService.GetUserMatchesDetailByEmailAndId(id, email);
+            if (users == null)
+            {
+                return NotFound(new
+                {
+                    Message = "User matches not found."
+                });
+            }
+            return Ok(users);
+        }
+
+        [HttpGet("Get_User_Matches_Detail_By_Id")]
+        public async Task<IActionResult> GetAllUserMatchesDetailById(string id)
+        {
+            var users = await _UserMatchesService.GetUserMatchesDetailById(id);
+            if (users == null)
+            {
+                return NotFound(new
+                {
+                    Message = "User matches not found."
+                });
+            }
+            return Ok(users);
+        }
     }
 }
