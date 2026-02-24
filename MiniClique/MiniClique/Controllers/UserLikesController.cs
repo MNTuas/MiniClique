@@ -24,6 +24,20 @@ namespace MiniClique.Controllers
             return Ok(users);
         }
 
+        [HttpGet("Get_User_Likes_By_Email")]
+        public async Task<IActionResult> GetAllUserLikesByEmail(string email)
+        {
+            var users = await _userLikesService.GetUserLikesByEmail(email);
+            if (users == null)
+            {
+                return NotFound(new
+                {
+                    Message = "User not found."
+                });
+            }
+            return Ok(users);
+        }
+
         [HttpPost("Create_User_Likes")]
         public async Task<IActionResult> CreateUserLikes(UserLikes userLikes)
         {

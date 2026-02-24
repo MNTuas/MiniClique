@@ -12,7 +12,7 @@ namespace MiniClique_Repository.Interface
     {
         Task<IEnumerable<UserLikes>> GetAllUserLikesAsync();
         Task<UserLikes> GetUserLikesById(string id);
-        Task<UserLikes> GetUserLikesByEmail(string email);
+        Task<IEnumerable<UserLikes>> GetUserLikesByEmail(string email);
         Task<List<UserLikes>> GetBothUserLikesByEmail(string fromEmail, string toEmail);
         Task CreateAsync(UserLikes userLikes);
     }

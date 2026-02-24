@@ -11,7 +11,7 @@ namespace MiniClique_Repository.Interface
     {
         Task<IEnumerable<UserMatches>> GetAllUserMatchesAsync();
         Task<UserMatches> GetUserMatchesById(string id);
-        Task<UserMatches> GetUserMatchesByEmail(string email);
+        Task<IEnumerable<UserMatches>> GetUserMatchesByEmail(string email);
         Task CreateAsync(UserMatches userMatches);
     }
 }

@@ -15,6 +15,7 @@ namespace MiniClique_Service.Interface
         Task<IEnumerable<GetUserResponse>> GetAllUserAsync();
         Task<Result<User>> CreateAsync(CreateUserRequest user);
         Task<Result<GetUserResponse>> GetUserById(string id);
+        Task<Result<User>> GetUserByEmail(string email);
         ////Task<Result<User>> UpdateUser(string id, UserUpdateRequest userUpdateRequest);
         ////Task<Result<User>> ActiveDeactiveUser(UserStatusRequest userStatusRequest);
         //Task<IEnumerable<object>> GetUserPostById(string id);

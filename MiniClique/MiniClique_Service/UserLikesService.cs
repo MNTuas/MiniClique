@@ -85,24 +85,15 @@ namespace MiniClique_Service
             return userLikes;
         }
 
-        public async Task<Result<UserLikes>> GetUserLikesByEmail(string email)
+        public async Task<IEnumerable<UserLikes>> GetUserLikesByEmail(string email)
         {
-            var userLikes = await _userLikesRepository.GetUserLikesByEmail(email);
-            if (userLikes == null)
+            var user = await _userRepository.GetUserByEmail(email);
+            if (user == null)
             {
-                return new Result<UserLikes>
-                {
-                    Success = false,
-                    Data = null,
-                    Message = "User likes not found"
-                };
+                return null;
             }
-            return new Result<UserLikes>
-            {
-                Success = true,
-                Data = userLikes,
-                Message = "Get user likes successful"
-            };
+            var userLikes = await _userLikesRepository.GetUserLikesByEmail(email);
+            return userLikes;
         }
 
     }

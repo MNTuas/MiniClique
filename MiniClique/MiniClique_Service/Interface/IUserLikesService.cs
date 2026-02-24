@@ -15,6 +15,6 @@ namespace MiniClique_Service.Interface
         Task<IEnumerable<UserLikes>> GetAllUserLikesAsync();
         Task<Result<object>> CreateAsync(UserLikes userLikes);
         //Task<Result<UserLikes>> GetUserLikesById(string id);
-        Task<Result<UserLikes>> GetUserLikesByEmail(string email);
+        Task<IEnumerable<UserLikes>> GetUserLikesByEmail(string email);
     }
 }

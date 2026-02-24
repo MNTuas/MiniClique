@@ -83,6 +83,25 @@ namespace MiniClique_Service
             return responses;
         }
 
+        public async Task<Result<User>> GetUserByEmail(string email)
+        {
+            var user = await _userRepository.GetUserByEmail(email);
+            if (user == null)
+            {
+                return new Result<User>
+                {
+                    Success = false,
+                    Message = "User not found"
+                };
+            }
+            return new Result<User>
+            {
+                Success = true,
+                Data = user,
+                Message = "User found successfully"
+            };
+        }
+
         public async Task<Result<GetUserResponse>> GetUserById(string id)
         {
             var user = await _userRepository.GetUserById(id);

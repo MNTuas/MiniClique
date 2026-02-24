@@ -54,14 +54,18 @@ namespace MiniClique_Repository
             return results;
         }
 
-        public async Task<UserMatches> GetUserMatchesByEmail(string email)
+        public async Task<IEnumerable<UserMatches>> GetUserMatchesByEmail(string email)
         {
             var pipeline = new BsonDocument[]
             {
-                 new BsonDocument("$match", new BsonDocument("Email", email)),
+                 new BsonDocument("$match", new BsonDocument("$or", new BsonArray
+                {
+                    new BsonDocument { { "UserAEmail", email } },
+                    new BsonDocument { { "UserBEmail", email } }
+                }))
 
             };
-            var results = await _UserMatchesCollection.Aggregate<UserMatches>(pipeline).FirstOrDefaultAsync();
+            var results = await _UserMatchesCollection.Aggregate<UserMatches>(pipeline).ToListAsync();
             return results;
         }
 

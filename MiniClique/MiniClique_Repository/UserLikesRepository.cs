@@ -78,14 +78,14 @@ namespace MiniClique_Repository
         }
 
 
-        public async Task<UserLikes> GetUserLikesByEmail(string email)
+        public async Task<IEnumerable<UserLikes>> GetUserLikesByEmail(string email)
         {
             var pipeline = new BsonDocument[]
             {
-                 new BsonDocument("$match", new BsonDocument("Email", email)),
+                 new BsonDocument("$match", new BsonDocument("FromEmail", email)),
 
             };
-            var results = await _userLikesCollection.Aggregate<UserLikes>(pipeline).FirstOrDefaultAsync();
+            var results = await _userLikesCollection.Aggregate<UserLikes>(pipeline).ToListAsync();
             return results;
         }
 

@@ -38,6 +38,20 @@ namespace MiniClique.Controllers
             }
         }
 
+        [HttpGet("Get_User_By_Email")]
+        public async Task<IActionResult> GetUserByEmail(string email)
+        {
+            var users = await _userService.GetUserByEmail(email);
+            if (users.Success)
+            {
+                return Ok(users);
+            }
+            else
+            {
+                return BadRequest(users);
+            }
+        }
+
         [HttpPost("Create_User")]
         public async Task<IActionResult> CreateUser(CreateUserRequest user)
         {
