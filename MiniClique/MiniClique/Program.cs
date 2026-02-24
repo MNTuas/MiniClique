@@ -36,6 +36,11 @@ builder.Services.AddScoped<IUserLikesRepository, UserLikesRepository>();
 builder.Services.AddScoped<IUserLikesService, UserLikesService>();
 builder.Services.AddScoped<IUserMatchesRepository, UserMatchesRepository>();
 builder.Services.AddScoped<IUserMatchesService, UserMatchesService>();
+builder.Services.AddScoped<IAvailabilitiesRepository, AvailabilitiesRepository>();
+builder.Services.AddScoped<IAvailabilitiesService, AvailabilitiesService>();
+builder.Services.AddScoped<IMatchesScheduleRepository, MatchesScheduleRepository>();
+
+
 
 
 var app = builder.Build();

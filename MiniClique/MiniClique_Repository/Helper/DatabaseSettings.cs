@@ -13,5 +13,7 @@ namespace MiniClique_Repository.Helper
         public string? UserCollectionName { get; set; }
         public string? UserLikesCollectionName { get; set; }
         public string? UserMatchesCollectionName { get; set; }
+        public string? AvailabilitiesCollectionName { get; set; }
+        public string? MatchesScheduleCollectionName { get; set; }
     }
 }
