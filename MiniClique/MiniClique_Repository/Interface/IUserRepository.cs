@@ -1,4 +1,5 @@
 ﻿using MiniClique_Model;
+using MiniClique_Model.Request;
 using MiniClique_Model.Response;
 using MongoDB.Driver;
 using System;
@@ -22,5 +23,6 @@ namespace MiniClique_Repository.Interface
         Task<User> GetUserByIdToUpdate(string id);
         Task<IEnumerable<User>> SearchUser(string keyword);
         Task<List<User>> GetBothUserByEmail(string fromEmail, string toEmail);
+        Task<User?> LoginAsync(LoginUserRequest loginUserRequest);
     }
 }

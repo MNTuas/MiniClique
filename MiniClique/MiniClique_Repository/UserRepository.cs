@@ -185,5 +185,16 @@ namespace MiniClique_Repository
                 .ToList();
         }
 
+        public async Task<User?> LoginAsync(LoginUserRequest loginUserRequest)
+        {
+            var normalizedEmail = loginUserRequest.Email.Trim().ToLowerInvariant();
+
+            var filter = Builders<User>.Filter.And(
+                Builders<User>.Filter.Eq(x => x.Email, normalizedEmail),
+                Builders<User>.Filter.Eq(x => x.Password, loginUserRequest.Password)
+            );
+
+            return await _userCollection.Find(filter).FirstOrDefaultAsync();
+        }
     }
 }

@@ -136,5 +136,38 @@ namespace MiniClique_Service
                 Message = null
             };
         }
+
+        public async Task<Result<GetUserResponse?>> LoginAsync(LoginUserRequest loginUserRequest)
+        {
+            var user = await _userRepository.LoginAsync(loginUserRequest);
+            if (user == null)
+            {
+                return new Result<GetUserResponse?>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Invalid email or password"
+                };
+            }
+
+            var newUser = new GetUserResponse
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                Picture = user.Picture,
+                Bio = user.Bio,
+                Birthday = user.Birthday,
+                Create_At = user.Create_At
+            };
+            
+            return new Result<GetUserResponse?>
+            {
+                Success = true,
+                Data = newUser,
+                Message = "Login successful"
+            };
+
+        }
     }
 }

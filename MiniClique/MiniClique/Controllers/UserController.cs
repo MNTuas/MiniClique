@@ -65,5 +65,19 @@ namespace MiniClique.Controllers
                 return BadRequest(users);
             }
         }
+
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login(LoginUserRequest loginUserRequest)
+        {
+            var users = await _userService.LoginAsync(loginUserRequest);
+            if (users.Success)
+            {
+                return Ok(users);
+            }
+            else
+            {
+                return BadRequest(users);
+            }
+        }
     }
 }
