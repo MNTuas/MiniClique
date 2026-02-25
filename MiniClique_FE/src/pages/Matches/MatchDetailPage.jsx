@@ -1,8 +1,8 @@
 // ============================================
-// Match Detail Page - Chi tiết match + lịch hẹn
+// Match Detail Page - Chi tiết match + lịch hẹn + chọn time slot
 // ============================================
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Card,
   Avatar,
@@ -14,6 +14,7 @@ import {
   Button,
   Empty,
   message,
+  Modal,
 } from "antd";
 import {
   UserOutlined,
@@ -23,12 +24,31 @@ import {
   CheckCircleFilled,
   ScheduleOutlined,
   MailOutlined,
+  SendOutlined,
 } from "@ant-design/icons";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { matchService, userService } from "@/services";
+import { matchService, userService, availabilityService } from "@/services";
 import { getUser } from "@/utils/auth";
 
 const { Title, Text } = Typography;
+
+// Tạo danh sách 21 ngày kế tiếp (3 tuần)
+const generateDates = () => {
+  const dates = [];
+  const today = new Date();
+  for (let i = 1; i <= 21; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    dates.push(d);
+  }
+  return dates;
+};
+
+const HOURS = [
+  { label: "19:00", value: "19:00:00" },
+  { label: "20:00", value: "20:00:00" },
+  { label: "21:00", value: "21:00:00" },
+];
 
 const MatchDetailPage = () => {
   const { matchId } = useParams();
@@ -39,47 +59,171 @@ const MatchDetailPage = () => {
   const [detail, setDetail] = useState(null);
   const [partnerInfo, setPartnerInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedSlots, setSelectedSlots] = useState([]); // [{date, startTime}]
+  const [submitting, setSubmitting] = useState(false);
+  const [forcePickerOpen, setForcePickerOpen] = useState(false); // force reopen khi no matching time
+  const [isUpdateMode, setIsUpdateMode] = useState(false); // dùng update API thay vì create
 
-  const partnerEmail =
-    location.state?.partnerEmail || null;
+  const partnerEmail = location.state?.partnerEmail || null;
+
+  const dates = useMemo(() => generateDates(), []);
+
+  const fetchDetail = async () => {
+    if (!matchId || !currentUser?.email) return;
+    setLoading(true);
+    try {
+      const res = await matchService.getDetail(matchId, currentUser.email);
+      const data = res?.data || res || [];
+      const matchData = Array.isArray(data) ? data[0] : data;
+      setDetail(matchData);
+
+      const otherEmail =
+        partnerEmail ||
+        (matchData?.userAEmail === currentUser.email
+          ? matchData?.userBEmail
+          : matchData?.userAEmail);
+
+      if (otherEmail) {
+        try {
+          const allUsersRes = await userService.getAll();
+          const allUsers = allUsersRes?.data || allUsersRes || [];
+          const found = allUsers.find((u) => u.email === otherEmail);
+          if (found) setPartnerInfo(found);
+        } catch {
+          // ok
+        }
+      }
+    } catch {
+      message.error("Không thể tải chi tiết match.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDetail = async () => {
-      if (!matchId || !currentUser?.email) return;
-      setLoading(true);
-      try {
-        const res = await matchService.getDetail(matchId, currentUser.email);
-        const data = res?.data || res || [];
-        // API trả về array, lấy phần tử đầu
-        const matchData = Array.isArray(data) ? data[0] : data;
-        setDetail(matchData);
-
-        // Lấy email đối phương
-        const otherEmail =
-          partnerEmail ||
-          (matchData?.userAEmail === currentUser.email
-            ? matchData?.userBEmail
-            : matchData?.userAEmail);
-
-        // Gọi API lấy info đối phương
-        if (otherEmail) {
-          try {
-            const allUsersRes = await userService.getAll();
-            const allUsers = allUsersRes?.data || allUsersRes || [];
-            const found = allUsers.find((u) => u.email === otherEmail);
-            if (found) setPartnerInfo(found);
-          } catch {
-            // ok
-          }
-        }
-      } catch {
-        message.error("Không thể tải chi tiết match.");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchDetail();
   }, [matchId]);
+
+  // Kiểm tra user hiện tại đã gửi availability chưa
+  const hasMyAvailability = detail?.availabilities?.some(
+    (a) => a.userEmail === currentUser?.email
+  );
+
+  // Toggle chọn slot
+  const toggleSlot = (dateStr, hour) => {
+    setSelectedSlots((prev) => {
+      const exists = prev.find(
+        (s) => s.date === dateStr && s.startTime === hour
+      );
+      if (exists) {
+        return prev.filter(
+          (s) => !(s.date === dateStr && s.startTime === hour)
+        );
+      }
+      return [...prev, { date: dateStr, startTime: hour }];
+    });
+  };
+
+  const isSlotSelected = (dateStr, hour) =>
+    selectedSlots.some((s) => s.date === dateStr && s.startTime === hour);
+
+  // Gửi availability
+  const handleSubmitAvailability = async () => {
+    if (selectedSlots.length === 0) {
+      message.warning("Vui lòng chọn ít nhất 1 khung giờ.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const payload = {
+        id: "",
+        matchId,
+        userEmail: currentUser?.email,
+        availableTimes: selectedSlots,
+        create_At: new Date().toISOString(),
+      };
+
+      let res;
+      if (isUpdateMode) {
+        res = await availabilityService.update(payload);
+      } else {
+        res = await availabilityService.create(payload);
+      }
+
+      const resMessage = res?.message || res?.data?.message || "";
+      setSelectedSlots([]);
+
+      if (resMessage.toLowerCase().includes("match found and schedule created")) {
+        // Case 2: Cả 2 đã chọn trùng giờ → chúc mừng
+        setForcePickerOpen(false);
+        setIsUpdateMode(false);
+        Modal.success({
+          icon: null,
+          centered: true,
+          content: (
+            <div style={{ textAlign: "center", padding: "16px 0" }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>🎉📅</div>
+              <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
+                Lịch hẹn đã được tạo!
+              </div>
+              <div style={{ color: "#888", fontSize: 14 }}>
+                Hệ thống đã tìm được thời gian phù hợp cho cả hai. Chúc bạn buổi hẹn vui vẻ! 💕
+              </div>
+            </div>
+          ),
+          okText: "Tuyệt vời!",
+          onOk: () => {},
+        });
+        await fetchDetail();
+      } else if (resMessage.toLowerCase().includes("no matching time found")) {
+        // Case 3: Không trùng giờ → mở lại picker để chọn lại (update mode)
+        setForcePickerOpen(true);
+        setIsUpdateMode(true);
+        Modal.warning({
+          icon: null,
+          centered: true,
+          content: (
+            <div style={{ textAlign: "center", padding: "16px 0" }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>😔</div>
+              <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
+                Không tìm thấy giờ trùng!
+              </div>
+              <div style={{ color: "#888", fontSize: 14 }}>
+                Lịch của bạn và đối phương không trùng nhau. Vui lòng chọn lại khung giờ khác nhé.
+              </div>
+            </div>
+          ),
+          okText: "Chọn lại",
+        });
+        await fetchDetail();
+      } else {
+        // Case 1: "Availability created. Waiting for second user" hoặc message khác
+        setForcePickerOpen(false);
+        setIsUpdateMode(false);
+        Modal.info({
+          icon: null,
+          centered: true,
+          content: (
+            <div style={{ textAlign: "center", padding: "16px 0" }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>⏳</div>
+              <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
+                Đã gửi lịch rảnh!
+              </div>
+              <div style={{ color: "#888", fontSize: 14 }}>
+                Đang chờ đối phương chọn lịch. Bạn sẽ nhận được thông báo khi có kết quả.
+              </div>
+            </div>
+          ),
+          okText: "Đã hiểu",
+        });
+        await fetchDetail();
+      }
+    } catch {
+      message.error("Gửi lịch rảnh thất bại.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -114,6 +258,11 @@ const MatchDetailPage = () => {
       year: "numeric",
     });
   };
+
+  const formatShortDate = (d) =>
+    d.toLocaleDateString("vi-VN", { weekday: "short", day: "2-digit", month: "2-digit" });
+
+  const toISODate = (d) => d.toISOString().split("T")[0] + "T00:00:00Z";
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto" }}>
@@ -170,14 +319,164 @@ const MatchDetailPage = () => {
             </div>
           )}
           <div style={{ marginTop: 8 }}>
-            <Tag color="pink">
-              Matched {formatDate(detail.create_At)}
-            </Tag>
+            <Tag color="pink">Matched {formatDate(detail.create_At)}</Tag>
           </div>
         </div>
       </Card>
 
-      {/* Availabilities */}
+      {/* Time Slot Picker - hiện khi chưa gửi availability HOẶC khi no matching time (forcePickerOpen) */}
+      {(!hasMyAvailability || forcePickerOpen) && (
+        <Card
+          title={
+            <span>
+              <CalendarOutlined style={{ marginRight: 8, color: "#667eea" }} />
+              {isUpdateMode ? "Chọn lại khung giờ rảnh" : "Chọn khung giờ rảnh của bạn"}
+            </span>
+          }
+          extra={
+            <Tag color="orange">
+              {selectedSlots.length} slot đã chọn
+            </Tag>
+          }
+          style={{
+            borderRadius: 14,
+            marginBottom: 20,
+            border: "2px solid #667eea33",
+          }}
+        >
+          <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
+            Chọn các khung giờ bạn rảnh trong 3 tuần tới. Hệ thống sẽ tìm thời gian phù hợp cho cả hai.
+          </Text>
+
+          {/* Time slot grid */}
+          <div
+            style={{
+              overflowX: "auto",
+              paddingBottom: 8,
+            }}
+          >
+            <table
+              style={{
+                borderCollapse: "separate",
+                borderSpacing: 4,
+                width: "100%",
+                minWidth: 400,
+              }}
+            >
+              <thead>
+                <tr>
+                  <th
+                    style={{
+                      textAlign: "left",
+                      padding: "6px 8px",
+                      fontSize: 12,
+                      color: "#999",
+                      minWidth: 90,
+                    }}
+                  >
+                    Ngày
+                  </th>
+                  {HOURS.map((h) => (
+                    <th
+                      key={h.value}
+                      style={{
+                        textAlign: "center",
+                        padding: "6px 4px",
+                        fontSize: 12,
+                        color: "#667eea",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {h.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {dates.map((date) => {
+                  const dateStr = toISODate(date);
+                  const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                  return (
+                    <tr key={dateStr}>
+                      <td
+                        style={{
+                          padding: "4px 8px",
+                          fontSize: 13,
+                          fontWeight: isWeekend ? 600 : 400,
+                          color: isWeekend ? "#f472b6" : "#333",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {formatShortDate(date)}
+                      </td>
+                      {HOURS.map((hour) => {
+                        const selected = isSlotSelected(dateStr, hour.value);
+                        return (
+                          <td key={hour.value} style={{ textAlign: "center", padding: 2 }}>
+                            <div
+                              onClick={() => toggleSlot(dateStr, hour.value)}
+                              style={{
+                                width: "100%",
+                                height: 36,
+                                borderRadius: 8,
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 16,
+                                transition: "all 0.2s",
+                                background: selected
+                                  ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                                  : "#f5f5f5",
+                                color: selected ? "#fff" : "#ccc",
+                                border: selected
+                                  ? "2px solid #667eea"
+                                  : "2px solid transparent",
+                                boxShadow: selected
+                                  ? "0 2px 8px rgba(102,126,234,0.3)"
+                                  : "none",
+                              }}
+                            >
+                              {selected ? "✓" : "—"}
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <Divider style={{ margin: "16px 0 12px" }} />
+
+          <div style={{ textAlign: "right" }}>
+            <Button
+              type="primary"
+              icon={<SendOutlined />}
+              loading={submitting}
+              disabled={selectedSlots.length === 0}
+              onClick={handleSubmitAvailability}
+              style={{
+                height: 42,
+                borderRadius: 10,
+                fontWeight: 600,
+                background:
+                  selectedSlots.length > 0
+                    ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                    : undefined,
+                border: "none",
+                paddingInline: 28,
+              }}
+            >
+              Gửi lịch rảnh ({selectedSlots.length})
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* Availabilities đã gửi */}
       {detail.availabilities && detail.availabilities.length > 0 && (
         <Card
           title={
@@ -190,36 +489,57 @@ const MatchDetailPage = () => {
         >
           {detail.availabilities.map((avail, idx) => {
             const isMe = avail.userEmail === currentUser?.email;
-            // Tìm tên user từ partnerInfo hoặc currentUser
             const displayName = isMe
               ? currentUser?.fullName || "Bạn"
               : partnerInfo?.fullName || avail.userEmail;
 
             return (
-              <div key={avail.id || idx} style={{ marginBottom: idx < detail.availabilities.length - 1 ? 20 : 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <div
+                key={avail.id || idx}
+                style={{
+                  marginBottom:
+                    idx < detail.availabilities.length - 1 ? 20 : 0,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
                   <Avatar
                     size={28}
                     src={isMe ? currentUser?.picture : partnerInfo?.picture}
                     icon={<UserOutlined />}
                   />
                   <Text strong>{displayName}</Text>
-                  {isMe && <Tag color="blue" style={{ fontSize: 11 }}>Bạn</Tag>}
+                  {isMe && (
+                    <Tag color="blue" style={{ fontSize: 11 }}>
+                      Bạn
+                    </Tag>
+                  )}
                 </div>
                 <Timeline
                   style={{ marginLeft: 16, marginBottom: 0 }}
                   items={
                     avail.availableTimes?.map((t, i) => ({
-                      dot: <ClockCircleOutlined style={{ color: "#667eea" }} />,
+                      dot: (
+                        <ClockCircleOutlined style={{ color: "#667eea" }} />
+                      ),
                       children: (
                         <span key={i}>
-                          <Text strong>{formatDate(t.date)}</Text> — {t.startTime || "—"}
+                          <Text strong>{formatDate(t.date)}</Text> —{" "}
+                          {t.startTime || "—"}
                         </span>
                       ),
                     })) || []
                   }
                 />
-                {idx < detail.availabilities.length - 1 && <Divider dashed style={{ margin: "12px 0" }} />}
+                {idx < detail.availabilities.length - 1 && (
+                  <Divider dashed style={{ margin: "12px 0" }} />
+                )}
               </div>
             );
           })}
@@ -231,7 +551,9 @@ const MatchDetailPage = () => {
         <Card
           title={
             <span>
-              <CheckCircleFilled style={{ color: "#52c41a", marginRight: 8 }} />
+              <CheckCircleFilled
+                style={{ color: "#52c41a", marginRight: 8 }}
+              />
               Lịch hẹn đã xác nhận
             </span>
           }
@@ -239,7 +561,14 @@ const MatchDetailPage = () => {
         >
           {detail.matchesSchedule.map((schedule) => (
             <div key={schedule.id} style={{ marginBottom: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 8,
+                }}
+              >
                 <Tag color={schedule.status ? "green" : "red"}>
                   {schedule.status ? "Đã xác nhận" : "Chờ xác nhận"}
                 </Tag>
@@ -252,7 +581,9 @@ const MatchDetailPage = () => {
                 items={
                   schedule.matchesTime?.map((t, i) => ({
                     color: "green",
-                    dot: <CalendarOutlined style={{ color: "#52c41a" }} />,
+                    dot: (
+                      <CalendarOutlined style={{ color: "#52c41a" }} />
+                    ),
                     children: (
                       <span key={i}>
                         <Text strong>{formatDate(t.date)}</Text> lúc{" "}

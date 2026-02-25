@@ -18,6 +18,11 @@ const API = {
     GET_BY_ID: `/User/Get_User_By_Id`, // ?id=xxx
   },
 
+  // User Likes
+  LIKES: {
+    CREATE: `/UserLikes/Create_User_Likes`,
+  },
+
   // User Matches
   MATCHES: {
     GET_BY_EMAIL: `/UserMatches/Get_User_Matches_By_Email`, // ?email=xxx
@@ -27,6 +32,8 @@ const API = {
   // Availabilities
   AVAILABILITIES: {
     GET_USER: `/Availabilities/Get_User_Availabilities`,
+    CREATE: `/Availabilities/Create_User_Availabilities`,
+    UPDATE: `/Availabilities/Update_User_Availabilities/sa`,
   },
 };
 

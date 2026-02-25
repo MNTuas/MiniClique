@@ -3,14 +3,16 @@
 // ============================================
 
 import { useState, useEffect, useCallback } from "react";
-import { Spin, message, Empty, Tag } from "antd";
+import { Spin, message, Tag, Modal, Avatar, Button } from "antd";
 import {
   HeartFilled,
   CloseOutlined,
   ManOutlined,
   WomanOutlined,
+  SmileOutlined,
 } from "@ant-design/icons";
-import { userService } from "@/services";
+import { useNavigate } from "react-router-dom";
+import { userService, likeService } from "@/services";
 import { getUser } from "@/utils/auth";
 
 const SwipePage = () => {
@@ -19,6 +21,7 @@ const SwipePage = () => {
   const [loading, setLoading] = useState(true);
   const [swiping, setSwiping] = useState(null); // 'left' | 'right' | null
   const currentUser = getUser();
+  const navigate = useNavigate();
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -44,6 +47,85 @@ const SwipePage = () => {
 
   const card = users[currentIndex];
 
+  const handleLikeApi = async (likedUser) => {
+    try {
+      const res = await likeService.create({
+        id: "", 
+        fromEmail: currentUser?.email,
+        toEmail: likedUser.email,
+      });
+
+      // Kiểm tra message để xác định match
+      const resMessage = res?.message || res?.data?.message || "";
+      const isMatch =
+        resMessage.toLowerCase().includes("both are matches") ||
+        resMessage.toLowerCase().includes("matches successful");
+
+      if (isMatch) {
+        // Lấy matchId từ response nếu có
+        const matchData = res?.data || res;
+        const matchId = matchData?.id || matchData?.matchId || "";
+
+        Modal.success({
+          icon: null,
+          centered: true,
+          closable: true,
+          footer: null,
+          content: (
+            <div style={{ textAlign: "center", padding: "16px 0" }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>🎉💕</div>
+              <Avatar
+                size={80}
+                src={likedUser.picture}
+                icon={!likedUser.picture && <SmileOutlined />}
+                style={{ border: "3px solid #f472b6", marginBottom: 12 }}
+              />
+              <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
+                It's a Match!
+              </div>
+              <div style={{ color: "#888", fontSize: 14, marginBottom: 20 }}>
+                Bạn và <strong>{likedUser.fullName}</strong> đã thích nhau!
+              </div>
+              <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+                <Button
+                  onClick={() => Modal.destroyAll()}
+                  style={{ borderRadius: 8, height: 40 }}
+                >
+                  Tiếp tục swipe
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    Modal.destroyAll();
+                    if (matchId) {
+                      navigate(`/matches/${matchId}`, {
+                        state: { partnerEmail: likedUser.email },
+                      });
+                    } else {
+                      navigate("/matches");
+                    }
+                  }}
+                  style={{
+                    borderRadius: 8,
+                    height: 40,
+                    fontWeight: 600,
+                    background:
+                      "linear-gradient(135deg, #f472b6 0%, #ef4444 100%)",
+                    border: "none",
+                  }}
+                >
+                  Xem Match 💕
+                </Button>
+              </div>
+            </div>
+          ),
+        });
+      }
+    } catch {
+      // Like thất bại thì im
+    }
+  };
+
   const handleSwipe = (direction) => {
     if (!card || swiping) return;
     setSwiping(direction);
@@ -53,6 +135,8 @@ const SwipePage = () => {
         content: `❤️ Bạn đã thích ${card.fullName}!`,
         duration: 1.5,
       });
+      // Gọi API like
+      handleLikeApi(card);
     }
 
     setTimeout(() => {
@@ -60,7 +144,8 @@ const SwipePage = () => {
       if (currentIndex < users.length - 1) {
         setCurrentIndex((prev) => prev + 1);
       } else {
-        setCurrentIndex(users.length); // hết người
+        // Hết người → tự reload lại danh sách
+        fetchUsers();
       }
     }, 400);
   };
@@ -73,13 +158,10 @@ const SwipePage = () => {
     );
   }
 
-  if (!card) {
+  if (users.length === 0) {
     return (
       <div style={styles.center}>
-        <Empty
-          description="Đã hết người để khám phá 🔍"
-          style={{ fontSize: 16 }}
-        />
+        <Spin size="large" tip="Đang tìm người mới..." />
       </div>
     );
   }
