@@ -3,15 +3,16 @@
 // ============================================
 
 import { useState } from "react";
-import { Form, Input, Button, Typography, Divider, message } from "antd";
+import { Form, Input, Button, Typography, Divider, Modal, Avatar, message } from "antd";
 import {
-  UserOutlined,
+  MailOutlined,
   LockOutlined,
   LoginOutlined,
+  SmileOutlined,
 } from "@ant-design/icons";
 import { useNavigate, Link } from "react-router-dom";
 import { authService } from "@/services";
-import { saveCredentials, setUser } from "@/utils/auth";
+import { setUser } from "@/utils/auth";
 
 const { Title, Text } = Typography;
 
@@ -24,31 +25,62 @@ const LoginPage = () => {
     setLoading(true);
     try {
       const response = await authService.login({
-        userName: values.userName,
+        email: values.email,
         password: values.password,
       });
 
-      // Lưu username, password, role vào localStorage
-      const userData = response?.data || response;
+      // response đã qua interceptor => response = response.data gốc
+      // Cấu trúc: { success, data: {...}, message }
+      const result = response;
+      const userData = result?.data || result;
 
-      saveCredentials({
-        userName: values.userName,
-        password: values.password,
-        role: userData?.role || userData?.Role || "USER",
-      });
-
-      // Lưu full user info nếu có
+      // Lưu toàn bộ user data vào localStorage
       if (userData) {
         setUser(userData);
       }
 
-      message.success("Đăng nhập thành công! 🎉");
-      navigate("/");
+      // Hiện popup chào mừng
+      Modal.success({
+        icon: null,
+        centered: true,
+        okText: "Bắt đầu nào!",
+        okButtonProps: {
+          style: {
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            border: "none",
+            borderRadius: 8,
+            height: 40,
+            fontWeight: 600,
+          },
+        },
+        content: (
+          <div style={{ textAlign: "center", padding: "12px 0" }}>
+            <Avatar
+              size={72}
+              src={userData?.picture}
+              icon={!userData?.picture && <SmileOutlined />}
+              style={{
+                marginBottom: 16,
+                border: "3px solid #f0f0f0",
+              }}
+            />
+            <div
+              style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}
+            >
+              Xin chào, {userData?.fullName || "bạn"}! 👋
+            </div>
+            <div style={{ color: "#888", fontSize: 14 }}>
+              Chào mừng bạn quay trở lại MiniClique
+            </div>
+          </div>
+        ),
+        onOk: () => navigate("/"),
+      });
     } catch (error) {
       const errMsg =
         error?.response?.data?.message ||
         error?.response?.data ||
-        "Tên đăng nhập hoặc mật khẩu không đúng!";
+        "Email hoặc mật khẩu không đúng!";
       message.error(typeof errMsg === "string" ? errMsg : "Đăng nhập thất bại!");
     } finally {
       setLoading(false);
@@ -72,13 +104,16 @@ const LoginPage = () => {
         requiredMark={false}
       >
         <Form.Item
-          name="userName"
-          label={<span style={{ fontWeight: 500 }}>Tên đăng nhập</span>}
-          rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập!" }]}
+          name="email"
+          label={<span style={{ fontWeight: 500 }}>Email</span>}
+          rules={[
+            { required: true, message: "Vui lòng nhập email!" },
+            { type: "email", message: "Email không hợp lệ!" },
+          ]}
         >
           <Input
-            prefix={<UserOutlined style={{ color: "#bfbfbf" }} />}
-            placeholder="Nhập tên đăng nhập"
+            prefix={<MailOutlined style={{ color: "#bfbfbf" }} />}
+            placeholder="Nhập email"
             style={{ borderRadius: 10, height: 48 }}
           />
         </Form.Item>

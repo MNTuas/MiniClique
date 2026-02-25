@@ -3,15 +3,30 @@
 // ============================================
 
 import { useState } from "react";
-import { Form, Input, Button, Typography, Divider, message } from "antd";
+import {
+  Form,
+  Input,
+  Button,
+  Typography,
+  Divider,
+  DatePicker,
+  Radio,
+  Modal,
+  Avatar,
+  message,
+} from "antd";
 import {
   UserOutlined,
   LockOutlined,
   MailOutlined,
   UserAddOutlined,
+  SmileOutlined,
+  EditOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 import { useNavigate, Link } from "react-router-dom";
 import { authService } from "@/services";
+import { setUser } from "@/utils/auth";
 
 const { Title, Text } = Typography;
 
@@ -23,14 +38,62 @@ const RegisterPage = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
+      // 1. Đăng ký
       await authService.register({
-        userName: values.userName,
+        email: values.email,
+        password: values.password,
+        confirmPassword: values.confirmPassword,
+        fullName: values.fullName,
+        gender: values.gender ?? true,
+        birthday: values.birthday
+          ? values.birthday.format("DD-MM-YYYY")
+          : "",
+        bio: values.bio || "",
+      });
+
+      // 2. Tự động đăng nhập luôn
+      const loginRes = await authService.login({
         email: values.email,
         password: values.password,
       });
 
-      message.success("Đăng ký thành công! Hãy đăng nhập. 🎉");
-      navigate("/login");
+      const userData = loginRes?.data || loginRes;
+      if (userData) {
+        setUser(userData);
+      }
+
+      // 3. Popup chào mừng
+      Modal.success({
+        icon: null,
+        centered: true,
+        okText: "Bắt đầu nào!",
+        okButtonProps: {
+          style: {
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            border: "none",
+            borderRadius: 8,
+            height: 40,
+            fontWeight: 600,
+          },
+        },
+        content: (
+          <div style={{ textAlign: "center", padding: "12px 0" }}>
+            <Avatar
+              size={72}
+              src={userData?.picture}
+              icon={!userData?.picture && <SmileOutlined />}
+              style={{ marginBottom: 16, border: "3px solid #f0f0f0" }}
+            />
+            <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
+              Chào mừng, {userData?.fullName || values.fullName}! 🎉
+            </div>
+            <div style={{ color: "#888", fontSize: 14 }}>
+              Tài khoản đã được tạo thành công
+            </div>
+          </div>
+        ),
+        onOk: () => navigate("/"),
+      });
     } catch (error) {
       const errMsg =
         error?.response?.data?.message ||
@@ -59,16 +122,13 @@ const RegisterPage = () => {
         requiredMark={false}
       >
         <Form.Item
-          name="userName"
-          label={<span style={{ fontWeight: 500 }}>Tên đăng nhập</span>}
-          rules={[
-            { required: true, message: "Vui lòng nhập tên đăng nhập!" },
-            { min: 3, message: "Tên đăng nhập ít nhất 3 ký tự!" },
-          ]}
+          name="fullName"
+          label={<span style={{ fontWeight: 500 }}>Họ và tên</span>}
+          rules={[{ required: true, message: "Vui lòng nhập họ tên!" }]}
         >
           <Input
             prefix={<UserOutlined style={{ color: "#bfbfbf" }} />}
-            placeholder="Nhập tên đăng nhập"
+            placeholder="Nhập họ và tên"
             style={{ borderRadius: 10, height: 48 }}
           />
         </Form.Item>
@@ -91,10 +151,7 @@ const RegisterPage = () => {
         <Form.Item
           name="password"
           label={<span style={{ fontWeight: 500 }}>Mật khẩu</span>}
-          rules={[
-            { required: true, message: "Vui lòng nhập mật khẩu!" },
-            { min: 6, message: "Mật khẩu ít nhất 6 ký tự!" },
-          ]}
+          rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
         >
           <Input.Password
             prefix={<LockOutlined style={{ color: "#bfbfbf" }} />}
@@ -125,6 +182,43 @@ const RegisterPage = () => {
             prefix={<LockOutlined style={{ color: "#bfbfbf" }} />}
             placeholder="Nhập lại mật khẩu"
             style={{ borderRadius: 10, height: 48 }}
+          />
+        </Form.Item>
+
+        <div style={{ display: "flex", gap: 12 }}>
+          <Form.Item
+            name="gender"
+            label={<span style={{ fontWeight: 500 }}>Giới tính</span>}
+            initialValue={true}
+            style={{ flex: 1 }}
+          >
+            <Radio.Group>
+              <Radio value={true}>Nam</Radio>
+              <Radio value={false}>Nữ</Radio>
+            </Radio.Group>
+          </Form.Item>
+
+          <Form.Item
+            name="birthday"
+            label={<span style={{ fontWeight: 500 }}>Ngày sinh</span>}
+            style={{ flex: 1 }}
+          >
+            <DatePicker
+              placeholder="Chọn ngày sinh"
+              format="DD-MM-YYYY"
+              style={{ borderRadius: 10, height: 48, width: "100%" }}
+            />
+          </Form.Item>
+        </div>
+
+        <Form.Item
+          name="bio"
+          label={<span style={{ fontWeight: 500 }}>Giới thiệu bản thân</span>}
+        >
+          <Input.TextArea
+            placeholder="Viết vài dòng về bạn..."
+            rows={2}
+            style={{ borderRadius: 10 }}
           />
         </Form.Item>
 

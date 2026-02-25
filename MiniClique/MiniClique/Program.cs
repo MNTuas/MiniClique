@@ -17,9 +17,9 @@ builder.Services.AddSwaggerGen();
 
 
 //Cors
-builder.Services.AddCors(p => p.AddPolicy("FFilms", build =>
+builder.Services.AddCors(p => p.AddPolicy("MiniClique", build =>
 {
-    build.WithOrigins("https://ffilm-two.vercel.app", "http://localhost:5173")
+    build.WithOrigins("https://mini-clique.vercel.app", "http://localhost:3000")
     .AllowAnyMethod()
     .AllowAnyHeader();
 }));
@@ -54,7 +54,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
-app.UseCors("FFilms");
+app.UseCors("MiniClique");
 app.UseAuthentication();
 app.UseAuthorization();
 

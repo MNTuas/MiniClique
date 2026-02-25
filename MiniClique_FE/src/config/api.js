@@ -14,6 +14,14 @@ const API = {
   USER: {
     LOGIN: `/User/Login`,
     REGISTER: `/User/Create_User`,
+    GET_ALL: `/User/Get_User`,
+    GET_BY_ID: `/User/Get_User_By_Id`, // ?id=xxx
+  },
+
+  // User Matches
+  MATCHES: {
+    GET_BY_EMAIL: `/UserMatches/Get_User_Matches_By_Email`, // ?email=xxx
+    GET_DETAIL: `/UserMatches/Get_User_Matches_Detail_By_EmailId`, // ?id=xxx&email=xxx
   },
 
   // Availabilities

@@ -1,28 +1,19 @@
 // ============================================
-// User Service - API calls liên quan đến users
+// User Service
 // ============================================
 
 import axiosInstance from "@/config/axiosInstance";
+import API from "@/config/api";
 
 const userService = {
-  getAll: (params) => {
-    return axiosInstance.get("/users", { params });
+  /** Lấy tất cả users */
+  getAll: () => {
+    return axiosInstance.get(API.USER.GET_ALL);
   },
 
+  /** Lấy user theo id */
   getById: (id) => {
-    return axiosInstance.get(`/users/${id}`);
-  },
-
-  create: (data) => {
-    return axiosInstance.post("/users", data);
-  },
-
-  update: (id, data) => {
-    return axiosInstance.put(`/users/${id}`, data);
-  },
-
-  delete: (id) => {
-    return axiosInstance.delete(`/users/${id}`);
+    return axiosInstance.get(API.USER.GET_BY_ID, { params: { id } });
   },
 };
 

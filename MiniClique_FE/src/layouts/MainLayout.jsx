@@ -3,34 +3,35 @@
 // ============================================
 
 import React, { useState } from "react";
-import { Layout, Menu, theme, Avatar, Dropdown, Space } from "antd";
+import { Layout, Menu, theme, Avatar, Dropdown, Space, Modal } from "antd";
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  HomeOutlined,
+  FireOutlined,
+  HeartOutlined,
   UserOutlined,
-  SettingOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { getUser, logout as doLogout } from "@/utils/auth";
 
 const { Header, Sider, Content } = Layout;
 
 const menuItems = [
   {
     key: "/",
-    icon: <HomeOutlined />,
-    label: "Trang chủ",
+    icon: <FireOutlined />,
+    label: "Khám phá",
   },
   {
-    key: "/users",
+    key: "/matches",
+    icon: <HeartOutlined />,
+    label: "Matches",
+  },
+  {
+    key: "/profile",
     icon: <UserOutlined />,
-    label: "Người dùng",
-  },
-  {
-    key: "/settings",
-    icon: <SettingOutlined />,
-    label: "Cài đặt",
+    label: "Trang cá nhân",
   },
 ];
 
@@ -38,6 +39,7 @@ const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const user = getUser();
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -65,8 +67,18 @@ const MainLayout = () => {
 
   const handleUserMenuClick = ({ key }) => {
     if (key === "logout") {
-      // TODO: handle logout
-      navigate("/login");
+      Modal.confirm({
+        title: "Đăng xuất",
+        content: "Bạn có chắc muốn đăng xuất?",
+        okText: "Đăng xuất",
+        cancelText: "Hủy",
+        okButtonProps: { danger: true },
+        centered: true,
+        onOk: () => {
+          doLogout();
+          navigate("/login");
+        },
+      });
     } else if (key === "profile") {
       navigate("/profile");
     }
@@ -127,8 +139,11 @@ const MainLayout = () => {
             placement="bottomRight"
           >
             <Space style={{ cursor: "pointer" }}>
-              <Avatar icon={<UserOutlined />} />
-              <span>Admin</span>
+              <Avatar
+                src={user?.picture}
+                icon={!user?.picture && <UserOutlined />}
+              />
+              <span>{user?.fullName || "User"}</span>
             </Space>
           </Dropdown>
         </Header>

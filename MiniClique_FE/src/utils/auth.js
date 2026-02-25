@@ -44,7 +44,7 @@ export const removeCredentials = () => {
 };
 
 // ===== Helpers =====
-export const isAuthenticated = () => !!getToken() || !!localStorage.getItem(USERNAME_KEY);
+export const isAuthenticated = () => !!getToken() || !!localStorage.getItem(USER_KEY);
 
 export const logout = () => {
   removeToken();

@@ -11,7 +11,8 @@ import API from "@/config/api";
 const authService = {
   /**
    * Login
-   * @param {{ userName: string, password: string }} data
+   * @param {{ email: string, password: string }} data
+   * @returns {{ success: boolean, data: object, message: string }}
    */
   login: (data) => {
     return axiosInstance.post(API.USER.LOGIN, data);
@@ -19,7 +20,7 @@ const authService = {
 
   /**
    * Register / Create User
-   * @param {{ userName: string, email: string, password: string }} data
+   * @param {{ email: string, password: string, confirmPassword: string, fullName: string, gender: boolean, birthday: string, bio: string }} data
    */
   register: (data) => {
     return axiosInstance.post(API.USER.REGISTER, data);
