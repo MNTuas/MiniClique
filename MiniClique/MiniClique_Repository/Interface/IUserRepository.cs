@@ -18,8 +18,8 @@ namespace MiniClique_Repository.Interface
         Task CreateAsync(User User);
         Task UpdateUser(string id, User User);
         Task<UpdateResult> UpdateUserStatus(FilterDefinition<User> filter, UpdateDefinition<User> update);
-        Task DeleteUser(string id);   
-        Task<IEnumerable<User>> GetRandomUser();
+        Task DeleteUser(string id);
+        Task<IEnumerable<User>> GetRandomUser(string currentUser);
         Task<User> GetUserByIdToUpdate(string id);
         Task<IEnumerable<User>> SearchUser(string keyword);
         Task<List<User>> GetBothUserByEmail(string fromEmail, string toEmail);

@@ -77,35 +77,47 @@ namespace MiniClique_Repository
             var pipeline = new[]
             {
                  new BsonDocument("$match",
-    new BsonDocument("$and",
-    new BsonArray
-            {
-                new BsonDocument("$or",
-                new BsonArray
+                    new BsonDocument("$and",
+                    new BsonArray
                     {
-                        new BsonDocument("UserAEmail", email),
-                        new BsonDocument("UserBEmail", email)
-                    }),
-                new BsonDocument("_id",
-                new ObjectId(id))
-            })),
-    new BsonDocument("$lookup",
-    new BsonDocument
-        {
-            { "from", "AvailabilitiesCollection" },
-            { "localField", "_id" },
-            { "foreignField", "MatchId" },
-            { "as", "Availabilities" }
-        }),
-    new BsonDocument("$lookup",
-    new BsonDocument
-        {
-            { "from", "MatchesScheduleCollection" },
-            { "localField", "_id" },
-            { "foreignField", "MatchId" },
-            { "as", "MatchesSchedule" }
-        })
-};
+                        new BsonDocument("$or",
+                        new BsonArray
+                        {
+                            new BsonDocument("UserAEmail", email),
+                            new BsonDocument("UserBEmail", email)
+                        }),
+                    new BsonDocument("_id",
+                    new ObjectId(id))
+                    })),
+    
+                new BsonDocument("$lookup",
+                new BsonDocument
+                {
+                    { "from", "AvailabilitiesCollection" },
+                    { "let", new BsonDocument("matchId", "$_id") },
+                    { "pipeline", new BsonArray
+                        {
+                            new BsonDocument("$match",
+                            new BsonDocument("$expr",
+                            new BsonDocument("$and", new BsonArray
+                            {
+                                new BsonDocument("$eq", new BsonArray { "$MatchId", "$$matchId" }),
+                                new BsonDocument("$eq", new BsonArray { "$UserEmail", normalizedEmail })
+                            })))   
+                        }
+                },
+                    { "as", "Availabilities" }
+                }),
+
+                new BsonDocument("$lookup",
+                new BsonDocument
+                {
+                    { "from", "MatchesScheduleCollection" },
+                    { "localField", "_id" },
+                    { "foreignField", "MatchId" },
+                    { "as", "MatchesSchedule" }
+                })
+            };
 
             var results = await _UserMatchesCollection
                 .Aggregate<GetUserMatchesDetailResponse>(pipeline)

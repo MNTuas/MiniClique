@@ -83,6 +83,29 @@ namespace MiniClique_Service
             return responses;
         }
 
+        public async Task<IEnumerable<GetUserResponse>> GetRandomUser(string currentUser)
+        {
+            var users = await _userRepository.GetRandomUser(currentUser);
+
+            if (users == null)
+                return Enumerable.Empty<GetUserResponse>();
+
+            var responses = users.Select(u => new GetUserResponse
+            {
+                Id = u.Id,
+                FullName = u.FullName,
+                Email = u.Email,
+                Picture = u.Picture,
+                Bio = u.Bio,
+                Birthday = u.Birthday,
+                Create_At = u.Create_At,
+                Gender = u.Gender,
+                Status = u.Status
+            });
+
+            return responses;
+        }
+
         public async Task<Result<User>> GetUserByEmail(string email)
         {
             var user = await _userRepository.GetUserByEmail(email);

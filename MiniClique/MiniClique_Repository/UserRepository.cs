@@ -99,15 +99,21 @@ namespace MiniClique_Repository
             return await _userCollection.UpdateOneAsync(filter, update);
         }
 
-        public async Task<IEnumerable<User>> GetRandomUser()
+        public async Task<IEnumerable<User>> GetRandomUser(string currentUser)
         {
             var pipeline = new BsonDocument[]
            {
+                new BsonDocument("$match",
+                new BsonDocument("Email",
+                new BsonDocument("$nin",
+                new BsonArray
+                {
+                    currentUser,
+                    "admin@gmail.com"
+                }))),
                 new BsonDocument("$sample",
-                new BsonDocument("size", 3)),
-                new BsonDocument("$sort",
-                new BsonDocument("_id", 1))
-           };
+                new BsonDocument("size", 100))
+            };
             var results = await _userCollection.Aggregate<User>(pipeline).ToListAsync();
             return results;
         }

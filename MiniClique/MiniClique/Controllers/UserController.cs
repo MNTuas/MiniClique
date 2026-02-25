@@ -24,6 +24,13 @@ namespace MiniClique.Controllers
             return Ok(users);
         }
 
+        [HttpGet("Get_Random_User")]
+        public async Task<IActionResult> GetRandomUser(string currentUser)
+        {
+            var users = await _userService.GetRandomUser(currentUser);
+            return Ok(users);
+        }
+
         [HttpGet("Get_User_By_Id")]
         public async Task<IActionResult> GetUserById(string id)
         {
