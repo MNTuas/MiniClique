@@ -83,7 +83,7 @@ const MatchesPage = () => {
   return (
     <div style={{ maxWidth: 600, margin: "0 auto" }}>
       <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <HeartFilled style={{ fontSize: 36, color: "#ef4444", marginBottom: 8 }} />
+        <HeartFilled style={{ fontSize: 36, color: "#f3ce83", marginBottom: 8 }} />
         <Title level={3} style={{ margin: 0 }}>
           Matches của bạn
         </Title>
@@ -131,7 +131,7 @@ const MatchesPage = () => {
                     src={partner?.picture}
                     icon={!partner?.picture && <UserOutlined />}
                     style={{
-                      border: "2px solid #f472b6",
+                      border: "2px solid #f3ce83",
                       flexShrink: 0,
                     }}
                   />

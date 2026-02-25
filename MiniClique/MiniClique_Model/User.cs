@@ -27,5 +27,8 @@ namespace MiniClique_Model
         public string Email { get; set; } = string.Empty;
         public DateTime? Create_At { get; set; }
 
+        [JsonIgnore]
+        public List<Object>? LikedByMe { get; set; }
+
     }
 }

@@ -69,11 +69,12 @@ const RegisterPage = () => {
         okText: "Bắt đầu nào!",
         okButtonProps: {
           style: {
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            background: "linear-gradient(135deg, #f3ce83 0%, #d4a54a 100%)",
             border: "none",
             borderRadius: 8,
             height: 40,
             fontWeight: 600,
+            color: "#1a1a1a",
           },
         },
         content: (
@@ -234,9 +235,10 @@ const RegisterPage = () => {
               borderRadius: 10,
               fontWeight: 600,
               fontSize: 16,
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              background: "linear-gradient(135deg, #f3ce83 0%, #d4a54a 100%)",
               border: "none",
-              boxShadow: "0 4px 15px rgba(102, 126, 234, 0.4)",
+              boxShadow: "0 4px 15px rgba(243, 206, 131, 0.4)",
+              color: "#1a1a1a",
             }}
           >
             Đăng ký
@@ -252,7 +254,7 @@ const RegisterPage = () => {
         <Text type="secondary">Đã có tài khoản? </Text>
         <Link
           to="/login"
-          style={{ fontWeight: 600, color: "#764ba2" }}
+          style={{ fontWeight: 600, color: "#f3ce83" }}
         >
           Đăng nhập
         </Link>

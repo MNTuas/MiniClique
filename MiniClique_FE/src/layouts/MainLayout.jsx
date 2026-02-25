@@ -1,9 +1,9 @@
 // ============================================
-// Main Layout - Layout chính với Sidebar + Header
+// Main Layout - Layout chính với Sidebar + Header + Footer
 // ============================================
 
 import React, { useState } from "react";
-import { Layout, Menu, theme, Avatar, Dropdown, Space, Modal } from "antd";
+import { Layout, Menu, Avatar, Dropdown, Space, Modal } from "antd";
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -11,11 +11,15 @@ import {
   HeartOutlined,
   UserOutlined,
   LogoutOutlined,
+  FacebookOutlined,
+  InstagramOutlined,
+  TwitterOutlined,
+  MailOutlined,
 } from "@ant-design/icons";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { getUser, logout as doLogout } from "@/utils/auth";
 
-const { Header, Sider, Content } = Layout;
+const { Header, Sider, Content, Footer } = Layout;
 
 const menuItems = [
   {
@@ -40,9 +44,6 @@ const MainLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const user = getUser();
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
 
   const userMenuItems = [
     {
@@ -85,12 +86,12 @@ const MainLayout = () => {
   };
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout style={{ minHeight: "100vh", background: "#111" }}>
       <Sider
         trigger={null}
         collapsible
         collapsed={collapsed}
-        style={{ background: colorBgContainer }}
+        style={{ background: "#1a1a1a", borderRight: "1px solid #2a2a2a" }}
       >
         <div
           style={{
@@ -98,12 +99,20 @@ const MainLayout = () => {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            gap: 8,
             fontSize: collapsed ? 16 : 20,
             fontWeight: "bold",
-            color: "#1677ff",
-            borderBottom: "1px solid #f0f0f0",
+            color: "#f3ce83",
+            borderBottom: "1px solid #2a2a2a",
           }}
         >
+          {!collapsed && (
+            <img
+              src="https://res.cloudinary.com/depqidlgv/image/upload/v1771854520/455646505_10226057102397556_5136531480083115955_n_w9rwtc.jpg"
+              alt="Logo"
+              style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" }}
+            />
+          )}
           {collapsed ? "MC" : "MiniClique"}
         </div>
         <Menu
@@ -111,26 +120,26 @@ const MainLayout = () => {
           selectedKeys={[location.pathname]}
           items={menuItems}
           onClick={handleMenuClick}
-          style={{ borderRight: 0 }}
+          style={{ borderRight: 0, background: "#1a1a1a" }}
         />
       </Sider>
 
-      <Layout>
+      <Layout style={{ background: "#111" }}>
         <Header
           style={{
             padding: "0 24px",
-            background: colorBgContainer,
+            background: "#1a1a1a",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            borderBottom: "1px solid #f0f0f0",
+            borderBottom: "1px solid #2a2a2a",
           }}
         >
           {React.createElement(
             collapsed ? MenuUnfoldOutlined : MenuFoldOutlined,
             {
               onClick: () => setCollapsed(!collapsed),
-              style: { fontSize: 18, cursor: "pointer" },
+              style: { fontSize: 18, cursor: "pointer", color: "#f3ce83" },
             }
           )}
 
@@ -142,8 +151,9 @@ const MainLayout = () => {
               <Avatar
                 src={user?.picture}
                 icon={!user?.picture && <UserOutlined />}
+                style={{ border: "2px solid #f3ce83" }}
               />
-              <span>{user?.fullName || "User"}</span>
+              <span style={{ color: "#fff" }}>{user?.fullName || "User"}</span>
             </Space>
           </Dropdown>
         </Header>
@@ -152,14 +162,42 @@ const MainLayout = () => {
           style={{
             margin: 24,
             padding: 24,
-            background: colorBgContainer,
-            borderRadius: borderRadiusLG,
+            background: "#1a1a1a",
+            borderRadius: 12,
             minHeight: 280,
             overflow: "auto",
+            border: "1px solid #2a2a2a",
           }}
         >
           <Outlet />
         </Content>
+
+        <Footer
+          style={{
+            background: "#1a1a1a",
+            borderTop: "1px solid #2a2a2a",
+            padding: "16px 24px",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "center", gap: 20, marginBottom: 8 }}>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={{ color: "#f3ce83", fontSize: 18 }}>
+              <FacebookOutlined />
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ color: "#f3ce83", fontSize: 18 }}>
+              <InstagramOutlined />
+            </a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" style={{ color: "#f3ce83", fontSize: 18 }}>
+              <TwitterOutlined />
+            </a>
+            <a href="mailto:contact@miniclique.com" style={{ color: "#f3ce83", fontSize: 18 }}>
+              <MailOutlined />
+            </a>
+          </div>
+          <div style={{ color: "#666", fontSize: 12 }}>
+            © 2026 MiniClique. All rights reserved.
+          </div>
+        </Footer>
       </Layout>
     </Layout>
   );

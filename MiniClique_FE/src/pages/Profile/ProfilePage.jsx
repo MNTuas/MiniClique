@@ -80,7 +80,7 @@ const ProfilePage = () => {
         <div
           style={{
             height: 160,
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            background: "linear-gradient(135deg, #1a1a1a 0%, #f3ce8340 100%)",
             position: "relative",
           }}
         />

@@ -15,6 +15,10 @@ const userService = {
   getById: (id) => {
     return axiosInstance.get(API.USER.GET_BY_ID, { params: { id } });
   },
+
+  getRandomUsers: (currentUser) => {
+    return axiosInstance.get(API.USER.GET_RANDOM_USERS, { params: { currentUser } });
+  }
 };
 
 export default userService;

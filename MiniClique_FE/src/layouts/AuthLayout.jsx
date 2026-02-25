@@ -3,7 +3,12 @@
 // ============================================
 
 import { Layout, Typography } from "antd";
-import { TeamOutlined } from "@ant-design/icons";
+import {
+  FacebookOutlined,
+  InstagramOutlined,
+  TwitterOutlined,
+  MailOutlined,
+} from "@ant-design/icons";
 import { Outlet } from "react-router-dom";
 
 const { Content } = Layout;
@@ -14,34 +19,18 @@ const AuthLayout = () => {
     <Layout
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        background: "url('https://res.cloudinary.com/depqidlgv/image/upload/v1772032342/462081644_122116573814484983_9014429602020064447_n_os3exm.png') center center / cover no-repeat",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
       }}
     >
-      {/* Floating background shapes */}
+      {/* Dark overlay */}
       <div
         style={{
           position: "fixed",
-          top: "-10%",
-          right: "-5%",
-          width: 400,
-          height: 400,
-          borderRadius: "50%",
-          background: "rgba(255,255,255,0.05)",
-          pointerEvents: "none",
-        }}
-      />
-      <div
-        style={{
-          position: "fixed",
-          bottom: "-15%",
-          left: "-10%",
-          width: 500,
-          height: 500,
-          borderRadius: "50%",
-          background: "rgba(255,255,255,0.04)",
+          inset: 0,
+          background: "rgba(0,0,0,0.6)",
           pointerEvents: "none",
         }}
       />
@@ -65,19 +54,22 @@ const AuthLayout = () => {
               width: 64,
               height: 64,
               borderRadius: 16,
-              background: "rgba(255,255,255,0.2)",
-              backdropFilter: "blur(10px)",
+              overflow: "hidden",
               marginBottom: 16,
             }}
           >
-            <TeamOutlined style={{ fontSize: 32, color: "#fff" }} />
+            <img
+              src="https://res.cloudinary.com/depqidlgv/image/upload/v1771854520/455646505_10226057102397556_5136531480083115955_n_w9rwtc.jpg"
+              alt="MiniClique Logo"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
           </div>
           <div>
             <Text
               style={{
                 fontSize: 28,
                 fontWeight: 700,
-                color: "#fff",
+                color: "#f3ce83",
                 letterSpacing: "-0.5px",
               }}
             >
@@ -92,18 +84,33 @@ const AuthLayout = () => {
         {/* Card */}
         <div
           style={{
-            background: "#fff",
+            background: "#1e1e1e",
             borderRadius: 16,
             padding: "40px 32px",
-            boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+            border: "1px solid #333",
           }}
         >
           <Outlet />
         </div>
 
-        {/* Footer */}
+        {/* Footer with social icons */}
         <div style={{ textAlign: "center", marginTop: 24 }}>
-          <Text style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 20, marginBottom: 12 }}>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={{ color: "#f3ce83", fontSize: 20 }}>
+              <FacebookOutlined />
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ color: "#f3ce83", fontSize: 20 }}>
+              <InstagramOutlined />
+            </a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" style={{ color: "#f3ce83", fontSize: 20 }}>
+              <TwitterOutlined />
+            </a>
+            <a href="mailto:contact@miniclique.com" style={{ color: "#f3ce83", fontSize: 20 }}>
+              <MailOutlined />
+            </a>
+          </div>
+          <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>
             © 2026 MiniClique. All rights reserved.
           </Text>
         </div>

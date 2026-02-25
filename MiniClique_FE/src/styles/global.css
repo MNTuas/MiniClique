@@ -1,5 +1,5 @@
 /* ============================================
-   Global Styles
+   Global Styles - Dark Theme
    ============================================ */
 
 * {
@@ -13,6 +13,8 @@ body {
     "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: #111111;
+  color: #ffffff;
 }
 
 #root {
@@ -25,11 +27,41 @@ body {
   height: 6px;
 }
 
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
 ::-webkit-scrollbar-thumb {
-  background: #d9d9d9;
+  background: #444;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #bfbfbf;
+  background: #f3ce83;
+}
+
+/* Links */
+a {
+  color: #f3ce83;
+}
+
+a:hover {
+  color: #d4a54a;
+}
+
+/* Ant Design dark overrides */
+.ant-card {
+  border-color: #333 !important;
+}
+
+.ant-divider {
+  border-color: #333 !important;
+}
+
+.ant-descriptions .ant-descriptions-item-label {
+  color: #aaa !important;
+}
+
+.ant-descriptions .ant-descriptions-item-content {
+  color: #fff !important;
 }

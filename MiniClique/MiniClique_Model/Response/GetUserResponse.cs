@@ -21,5 +21,6 @@ namespace MiniClique_Model.Response
         public string? Status { get; set; }
         public string Email { get; set; } = string.Empty;
         public DateTime? Create_At { get; set; }
-    }
+        public List<string>? LikedByMe { get; set; }
+}
 }

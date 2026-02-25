@@ -12,8 +12,8 @@ const availabilityService = {
   },
 
   /** Cập nhật availabilities cho match */
-  update: (data) => {
-    return axiosInstance.put(API.AVAILABILITIES.UPDATE, data);
+  update: (id, data) => {
+    return axiosInstance.put(`${API.AVAILABILITIES.UPDATE}/${id}`, data);
   },
 
   /** Lấy availabilities của user */

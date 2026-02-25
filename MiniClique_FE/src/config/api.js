@@ -16,6 +16,7 @@ const API = {
     REGISTER: `/User/Create_User`,
     GET_ALL: `/User/Get_User`,
     GET_BY_ID: `/User/Get_User_By_Id`, // ?id=xxx
+    GET_RANDOM_USERS: `/User/Get_Random_User`, // ?email=xxx&count=xxx
   },
 
   // User Likes
@@ -33,7 +34,7 @@ const API = {
   AVAILABILITIES: {
     GET_USER: `/Availabilities/Get_User_Availabilities`,
     CREATE: `/Availabilities/Create_User_Availabilities`,
-    UPDATE: `/Availabilities/Update_User_Availabilities/sa`,
+    UPDATE: `/Availabilities/Update_User_Availabilities/`,
   },
 };
 

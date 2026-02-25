@@ -100,7 +100,7 @@ namespace MiniClique_Service
                 Birthday = u.Birthday,
                 Create_At = u.Create_At,
                 Gender = u.Gender,
-                Status = u.Status
+                Status = u.Status,
             });
 
             return responses;

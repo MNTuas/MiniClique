@@ -15,6 +15,7 @@ import {
   Empty,
   message,
   Modal,
+  Alert,
 } from "antd";
 import {
   UserOutlined,
@@ -25,6 +26,7 @@ import {
   ScheduleOutlined,
   MailOutlined,
   SendOutlined,
+  WarningOutlined,
 } from "@ant-design/icons";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { matchService, userService, availabilityService } from "@/services";
@@ -104,10 +106,22 @@ const MatchDetailPage = () => {
     fetchDetail();
   }, [matchId]);
 
+  // Kiểm tra matchesSchedule đã có chưa
+  const hasSchedule =
+    detail?.matchesSchedule && detail.matchesSchedule.length > 0;
+
   // Kiểm tra user hiện tại đã gửi availability chưa
   const hasMyAvailability = detail?.availabilities?.some(
     (a) => a.userEmail === currentUser?.email
   );
+
+  // Lấy availability id của mình (dùng cho update)
+  const myAvailability = detail?.availabilities?.find(
+    (a) => a.userEmail === currentUser?.email
+  );
+
+  // Logic đơn giản: chưa có schedule => luôn hiện picker cho chọn/chọn lại
+  const showPicker = !hasSchedule;
 
   // Toggle chọn slot
   const toggleSlot = (dateStr, hour) => {
@@ -135,8 +149,9 @@ const MatchDetailPage = () => {
     }
     setSubmitting(true);
     try {
+      const isUpdate = !!myAvailability?.id;
       const payload = {
-        id: "",
+        id: isUpdate ? myAvailability.id : "",
         matchId,
         userEmail: currentUser?.email,
         availableTimes: selectedSlots,
@@ -144,8 +159,9 @@ const MatchDetailPage = () => {
       };
 
       let res;
-      if (isUpdateMode) {
-        res = await availabilityService.update(payload);
+      // Dùng update nếu đã có availability trước đó
+      if (isUpdate) {
+        res = await availabilityService.update(myAvailability.id, payload);
       } else {
         res = await availabilityService.create(payload);
       }
@@ -289,7 +305,7 @@ const MatchDetailPage = () => {
         <div
           style={{
             height: 100,
-            background: "linear-gradient(135deg, #f472b6 0%, #ef4444 100%)",
+            background: "linear-gradient(135deg, #1a1a1a 0%, #f3ce8340 100%)",
           }}
         />
         <div style={{ textAlign: "center", marginTop: -40, paddingBottom: 24 }}>
@@ -324,13 +340,30 @@ const MatchDetailPage = () => {
         </div>
       </Card>
 
-      {/* Time Slot Picker - hiện khi chưa gửi availability HOẶC khi no matching time (forcePickerOpen) */}
-      {(!hasMyAvailability || forcePickerOpen) && (
+      {/* Warning: chưa có schedule và đã có availability => chưa trùng giờ */}
+      {!hasSchedule && hasMyAvailability && (
+        <Alert
+          message="Chưa tìm được lịch hẹn trùng"
+          description="Khung giờ của bạn và đối phương chưa trùng nhau. Vui lòng chọn lại khung giờ khác bên dưới."
+          type="error"
+          showIcon
+          icon={<WarningOutlined />}
+          style={{
+            borderRadius: 12,
+            marginBottom: 20,
+            background: "#ff4d4f15",
+            border: "1px solid #ff4d4f40",
+          }}
+        />
+      )}
+
+      {/* Time Slot Picker */}
+      {showPicker && (
         <Card
           title={
             <span>
-              <CalendarOutlined style={{ marginRight: 8, color: "#667eea" }} />
-              {isUpdateMode ? "Chọn lại khung giờ rảnh" : "Chọn khung giờ rảnh của bạn"}
+              <CalendarOutlined style={{ marginRight: 8, color: "#f3ce83" }} />
+              {hasMyAvailability ? "Chọn lại khung giờ rảnh" : "Chọn khung giờ rảnh của bạn"}
             </span>
           }
           extra={
@@ -341,7 +374,7 @@ const MatchDetailPage = () => {
           style={{
             borderRadius: 14,
             marginBottom: 20,
-            border: "2px solid #667eea33",
+            border: "2px solid #f3ce8333",
           }}
         >
           <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
@@ -383,7 +416,7 @@ const MatchDetailPage = () => {
                         textAlign: "center",
                         padding: "6px 4px",
                         fontSize: 12,
-                        color: "#667eea",
+                        color: "#f3ce83",
                         fontWeight: 600,
                       }}
                     >
@@ -403,7 +436,7 @@ const MatchDetailPage = () => {
                           padding: "4px 8px",
                           fontSize: 13,
                           fontWeight: isWeekend ? 600 : 400,
-                          color: isWeekend ? "#f472b6" : "#333",
+                          color: isWeekend ? "#f3ce83" : "#ccc",
                           whiteSpace: "nowrap",
                         }}
                       >
@@ -426,14 +459,14 @@ const MatchDetailPage = () => {
                                 fontSize: 16,
                                 transition: "all 0.2s",
                                 background: selected
-                                  ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                                  : "#f5f5f5",
-                                color: selected ? "#fff" : "#ccc",
+                                  ? "linear-gradient(135deg, #f3ce83 0%, #d4a54a 100%)"
+                                  : "#2a2a2a",
+                                color: selected ? "#1a1a1a" : "#555",
                                 border: selected
-                                  ? "2px solid #667eea"
+                                  ? "2px solid #f3ce83"
                                   : "2px solid transparent",
                                 boxShadow: selected
-                                  ? "0 2px 8px rgba(102,126,234,0.3)"
+                                  ? "0 2px 8px rgba(243,206,131,0.3)"
                                   : "none",
                               }}
                             >
@@ -464,10 +497,11 @@ const MatchDetailPage = () => {
                 fontWeight: 600,
                 background:
                   selectedSlots.length > 0
-                    ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                    ? "linear-gradient(135deg, #f3ce83 0%, #d4a54a 100%)"
                     : undefined,
                 border: "none",
                 paddingInline: 28,
+                color: selectedSlots.length > 0 ? "#1a1a1a" : undefined,
               }}
             >
               Gửi lịch rảnh ({selectedSlots.length})
@@ -526,7 +560,7 @@ const MatchDetailPage = () => {
                   items={
                     avail.availableTimes?.map((t, i) => ({
                       dot: (
-                        <ClockCircleOutlined style={{ color: "#667eea" }} />
+                        <ClockCircleOutlined style={{ color: "#f3ce83" }} />
                       ),
                       children: (
                         <span key={i}>
@@ -587,7 +621,7 @@ const MatchDetailPage = () => {
                     children: (
                       <span key={i}>
                         <Text strong>{formatDate(t.date)}</Text> lúc{" "}
-                        <Tag color="purple">{t.startTime || "—"}</Tag>
+                        <Tag color="gold">{t.startTime || "—"}</Tag>
                       </span>
                     ),
                   })) || []

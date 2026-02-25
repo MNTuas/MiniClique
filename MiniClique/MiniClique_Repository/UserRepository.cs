@@ -103,17 +103,50 @@ namespace MiniClique_Repository
         {
             var pipeline = new BsonDocument[]
            {
-                new BsonDocument("$match",
-                new BsonDocument("Email",
-                new BsonDocument("$nin",
-                new BsonArray
+               new BsonDocument("$match",
+    new BsonDocument("Email",
+    new BsonDocument("$nin",
+    new BsonArray
                 {
                     currentUser,
                     "admin@gmail.com"
                 }))),
-                new BsonDocument("$sample",
-                new BsonDocument("size", 100))
-            };
+    new BsonDocument("$lookup",
+    new BsonDocument
+        {
+            { "from", "UserLikesCollection" },
+            { "let",
+    new BsonDocument("targetEmail", "$Email") },
+            { "pipeline",
+    new BsonArray
+            {
+                new BsonDocument("$match",
+                new BsonDocument("$expr",
+                new BsonDocument("$and",
+                new BsonArray
+                            {
+                                new BsonDocument("$eq",
+                                new BsonArray
+                                    {
+                                        "$FromEmail",
+                                        currentUser
+                                    }),
+                                new BsonDocument("$eq",
+                                new BsonArray
+                                    {
+                                        "$ToEmail",
+                                        "$$targetEmail"
+                                    })
+                            })))
+            } },
+            { "as", "LikedByMe" }
+        }),
+    new BsonDocument("$match",
+    new BsonDocument("LikedByMe",
+    new BsonDocument("$size", 0))),
+    new BsonDocument("$sample",
+    new BsonDocument("size", 10))
+};
             var results = await _userCollection.Aggregate<User>(pipeline).ToListAsync();
             return results;
         }

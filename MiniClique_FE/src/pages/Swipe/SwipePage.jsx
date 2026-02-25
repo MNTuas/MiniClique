@@ -26,20 +26,16 @@ const SwipePage = () => {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await userService.getAll();
+      const res = await userService.getRandomUsers(currentUser?.email);
       const allUsers = res?.data || res || [];
-      // Lọc bỏ chính mình
-      const filtered = allUsers.filter(
-        (u) => u.email !== currentUser?.email && u.id !== currentUser?.id
-      );
-      setUsers(filtered);
+      setUsers(allUsers);
       setCurrentIndex(0);
     } catch {
       message.error("Không thể tải danh sách người dùng.");
     } finally {
       setLoading(false);
     }
-  }, [currentUser?.email, currentUser?.id]);
+  }, [currentUser?.email]);
 
   useEffect(() => {
     fetchUsers();
@@ -78,7 +74,7 @@ const SwipePage = () => {
                 size={80}
                 src={likedUser.picture}
                 icon={!likedUser.picture && <SmileOutlined />}
-                style={{ border: "3px solid #f472b6", marginBottom: 12 }}
+                style={{ border: "3px solid #f3ce83", marginBottom: 12 }}
               />
               <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
                 It's a Match!
@@ -110,8 +106,9 @@ const SwipePage = () => {
                     height: 40,
                     fontWeight: 600,
                     background:
-                      "linear-gradient(135deg, #f472b6 0%, #ef4444 100%)",
+                      "linear-gradient(135deg, #f3ce83 0%, #d4a54a 100%)",
                     border: "none",
+                    color: "#1a1a1a",
                   }}
                 >
                   Xem Match 💕
@@ -287,8 +284,8 @@ const styles = {
     maxWidth: "90vw",
     borderRadius: 20,
     overflow: "hidden",
-    boxShadow: "0 10px 40px rgba(0,0,0,0.15)",
-    background: "#fff",
+    boxShadow: "0 10px 40px rgba(0,0,0,0.4)",
+    background: "#1e1e1e",
     position: "relative",
   },
   imageContainer: {
@@ -309,7 +306,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    background: "linear-gradient(135deg, #1a1a1a 0%, #333 100%)",
   },
   gradient: {
     position: "absolute",
@@ -361,8 +358,8 @@ const styles = {
   },
   likeLabel: {
     left: 24,
-    color: "#4ade80",
-    borderColor: "#4ade80",
+    color: "#f3ce83",
+    borderColor: "#f3ce83",
     transform: "rotate(-15deg)",
   },
   nopeLabel: {
@@ -389,18 +386,18 @@ const styles = {
     boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
   },
   btnNope: {
-    background: "#fff",
+    background: "#2a2a2a",
     color: "#f87171",
-    border: "2px solid #fecaca",
+    border: "2px solid #f8717140",
   },
   btnLike: {
-    background: "linear-gradient(135deg, #f472b6 0%, #ef4444 100%)",
-    color: "#fff",
+    background: "linear-gradient(135deg, #f3ce83 0%, #d4a54a 100%)",
+    color: "#1a1a1a",
   },
   counter: {
     marginTop: 16,
     fontSize: 13,
-    color: "#aaa",
+    color: "#666",
   },
 };
 
