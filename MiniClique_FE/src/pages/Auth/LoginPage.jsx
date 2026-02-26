@@ -155,8 +155,47 @@ const LoginPage = () => {
       </Form>
 
       <Divider style={{ margin: "16px 0", color: "#d9d9d9", fontSize: 13 }}>
-        hoặc
+        hoặc đăng nhập nhanh
       </Divider>
+
+      <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+        <Button
+          block
+          loading={loading}
+          onClick={() => {
+            form.setFieldsValue({ email: "user9@gmail.com", password: "123" });
+            form.submit();
+          }}
+          style={{
+            height: 44,
+            borderRadius: 10,
+            fontWeight: 600,
+            background: "#2a2a2a",
+            border: "1px solid #f3ce8340",
+            color: "#f3ce83",
+          }}
+        >
+          User 9
+        </Button>
+        <Button
+          block
+          loading={loading}
+          onClick={() => {
+            form.setFieldsValue({ email: "user10@gmail.com", password: "123" });
+            form.submit();
+          }}
+          style={{
+            height: 44,
+            borderRadius: 10,
+            fontWeight: 600,
+            background: "#2a2a2a",
+            border: "1px solid #f3ce8340",
+            color: "#f3ce83",
+          }}
+        >
+          User 10
+        </Button>
+      </div>
 
       <div style={{ textAlign: "center" }}>
         <Text type="secondary">Chưa có tài khoản? </Text>

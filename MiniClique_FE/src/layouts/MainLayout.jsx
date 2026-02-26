@@ -181,10 +181,10 @@ const MainLayout = () => {
           }}
         >
           <div style={{ display: "flex", justifyContent: "center", gap: 20, marginBottom: 8 }}>
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={{ color: "#f3ce83", fontSize: 18 }}>
+            <a href="https://www.facebook.com/clique83" target="_blank" rel="noopener noreferrer" style={{ color: "#f3ce83", fontSize: 18 }}>
               <FacebookOutlined />
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ color: "#f3ce83", fontSize: 18 }}>
+            <a href="https://instagram.com/clique.83" target="_blank" rel="noopener noreferrer" style={{ color: "#f3ce83", fontSize: 18 }}>
               <InstagramOutlined />
             </a>
             <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" style={{ color: "#f3ce83", fontSize: 18 }}>

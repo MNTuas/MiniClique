@@ -345,7 +345,7 @@ const MatchDetailPage = () => {
         <Alert
           message="Chưa tìm được lịch hẹn trùng"
           description="Khung giờ của bạn và đối phương chưa trùng nhau. Vui lòng chọn lại khung giờ khác bên dưới."
-          type="error"
+          type="warning"
           showIcon
           icon={<WarningOutlined />}
           style={{
@@ -355,6 +355,76 @@ const MatchDetailPage = () => {
             border: "1px solid #ff4d4f40",
           }}
         />
+      )}
+
+      {/* Availabilities đã gửi */}
+      {detail.availabilities && detail.availabilities.length > 0 && (
+        <Card
+          title={
+            <span>
+              <ScheduleOutlined style={{ marginRight: 8 }} />
+              Lịch rảnh
+            </span>
+          }
+          style={{ borderRadius: 14, marginBottom: 20 }}
+        >
+          {detail.availabilities.map((avail, idx) => {
+            const isMe = avail.userEmail === currentUser?.email;
+            const displayName = isMe
+              ? currentUser?.fullName || "Bạn"
+              : partnerInfo?.fullName || avail.userEmail;
+
+            return (
+              <div
+                key={avail.id || idx}
+                style={{
+                  marginBottom:
+                    idx < detail.availabilities.length - 1 ? 20 : 0,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <Avatar
+                    size={28}
+                    src={isMe ? currentUser?.picture : partnerInfo?.picture}
+                    icon={<UserOutlined />}
+                  />
+                  <Text strong>{displayName}</Text>
+                  {isMe && (
+                    <Tag color="blue" style={{ fontSize: 11 }}>
+                      Bạn
+                    </Tag>
+                  )}
+                </div>
+                <Timeline
+                  style={{ marginLeft: 16, marginBottom: 0 }}
+                  items={
+                    avail.availableTimes?.map((t, i) => ({
+                      dot: (
+                        <ClockCircleOutlined style={{ color: "#f3ce83" }} />
+                      ),
+                      children: (
+                        <span key={i}>
+                          <Text strong>{formatDate(t.date)}</Text> —{" "}
+                          {t.startTime || "—"}
+                        </span>
+                      ),
+                    })) || []
+                  }
+                />
+                {idx < detail.availabilities.length - 1 && (
+                  <Divider dashed style={{ margin: "12px 0" }} />
+                )}
+              </div>
+            );
+          })}
+        </Card>
       )}
 
       {/* Time Slot Picker */}
@@ -510,75 +580,7 @@ const MatchDetailPage = () => {
         </Card>
       )}
 
-      {/* Availabilities đã gửi */}
-      {detail.availabilities && detail.availabilities.length > 0 && (
-        <Card
-          title={
-            <span>
-              <ScheduleOutlined style={{ marginRight: 8 }} />
-              Lịch rảnh
-            </span>
-          }
-          style={{ borderRadius: 14, marginBottom: 20 }}
-        >
-          {detail.availabilities.map((avail, idx) => {
-            const isMe = avail.userEmail === currentUser?.email;
-            const displayName = isMe
-              ? currentUser?.fullName || "Bạn"
-              : partnerInfo?.fullName || avail.userEmail;
-
-            return (
-              <div
-                key={avail.id || idx}
-                style={{
-                  marginBottom:
-                    idx < detail.availabilities.length - 1 ? 20 : 0,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: 8,
-                  }}
-                >
-                  <Avatar
-                    size={28}
-                    src={isMe ? currentUser?.picture : partnerInfo?.picture}
-                    icon={<UserOutlined />}
-                  />
-                  <Text strong>{displayName}</Text>
-                  {isMe && (
-                    <Tag color="blue" style={{ fontSize: 11 }}>
-                      Bạn
-                    </Tag>
-                  )}
-                </div>
-                <Timeline
-                  style={{ marginLeft: 16, marginBottom: 0 }}
-                  items={
-                    avail.availableTimes?.map((t, i) => ({
-                      dot: (
-                        <ClockCircleOutlined style={{ color: "#f3ce83" }} />
-                      ),
-                      children: (
-                        <span key={i}>
-                          <Text strong>{formatDate(t.date)}</Text> —{" "}
-                          {t.startTime || "—"}
-                        </span>
-                      ),
-                    })) || []
-                  }
-                />
-                {idx < detail.availabilities.length - 1 && (
-                  <Divider dashed style={{ margin: "12px 0" }} />
-                )}
-              </div>
-            );
-          })}
-        </Card>
-      )}
+      
 
       {/* Matches Schedule */}
       {detail.matchesSchedule && detail.matchesSchedule.length > 0 && (
