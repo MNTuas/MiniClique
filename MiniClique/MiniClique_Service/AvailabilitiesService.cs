@@ -27,7 +27,7 @@ namespace MiniClique_Service
         }
         public async Task<Result<Availabilities>> CreateAsync(Availabilities request)
         {
-            // 1️⃣ Kiểm tra match tồn tại
+            // Check if the match exists
             var existingMatch = await _userMatchesRepository
                 .GetUserMatchesById(request.MatchId);
 
@@ -40,7 +40,7 @@ namespace MiniClique_Service
                 };
             }
 
-            // 2️⃣ Tạo availability mới
+            // Create new availability
             var newAvailability = new Availabilities
             {
                 MatchId = request.MatchId,
@@ -48,7 +48,7 @@ namespace MiniClique_Service
                 AvailableTimes = request.AvailableTimes?
                     .Select(x => new Slots
                     {
-                        Date = x.Date.Date, // đảm bảo chỉ lấy ngày
+                        Date = x.Date.Date, 
                         StartTime = x.StartTime
                     }).ToList(),
                 Create_At = DateTime.UtcNow
@@ -56,7 +56,7 @@ namespace MiniClique_Service
 
             await _AvailabilitiesRepository.CreateAsync(newAvailability);
 
-            // 3️⃣ Kiểm tra đã đủ 2 user chưa
+            // Find if both users have submitted their availability
             var users = await _AvailabilitiesRepository
                 .GetMatchIfTwoUsers(request.MatchId);
 
@@ -70,7 +70,7 @@ namespace MiniClique_Service
                 };
             }
 
-            // 4️⃣ Tìm slot trùng đầu tiên
+            // Find the first matching slot
             var firstMatchedSlot = users[0].AvailableTimes
                 .IntersectBy(
                     users[1].AvailableTimes
@@ -91,7 +91,7 @@ namespace MiniClique_Service
                 };
             }
 
-            // 5️⃣ Kiểm tra schedule đã tồn tại chưa (tránh duplicate)
+            // Find if a schedule already exists for this match
             var existingSchedule = await _matchesScheduleRepository
                 .GetMatchesScheduleById(request.MatchId);
 
@@ -121,7 +121,7 @@ namespace MiniClique_Service
 
         public async Task<Result<Availabilities>> UpdateAsync(string id, Availabilities request)
         {
-            // 1️⃣ Kiểm tra match tồn tại
+            // Check if the match exists
             var existingMatch = await _userMatchesRepository
                 .GetUserMatchesById(request.MatchId);
 
@@ -134,7 +134,7 @@ namespace MiniClique_Service
                 };
             }
 
-            // 2️⃣ Tìm availability của user trong match
+            // Find existing availability
             var existingAvailability = await _AvailabilitiesRepository
                 .GetAvailabilitiesById(id);
 
@@ -147,7 +147,7 @@ namespace MiniClique_Service
                 };
             }
 
-            // 3️⃣ Update slot
+            // Update slot
             existingAvailability.MatchId = request.MatchId;
             existingAvailability.UserEmail = request.UserEmail;
             existingAvailability.AvailableTimes = request.AvailableTimes?
@@ -161,7 +161,7 @@ namespace MiniClique_Service
 
             await _AvailabilitiesRepository.UpdateAvailabilities(existingAvailability.Id, request);
 
-            // 4️⃣ Kiểm tra đủ 2 user chưa
+            // Find if both users have submitted their availability
             var users = await _AvailabilitiesRepository
                 .GetMatchIfTwoUsers(request.MatchId);
 
@@ -175,7 +175,7 @@ namespace MiniClique_Service
                 };
             }
 
-            // 5️⃣ Tìm slot trùng
+            // Find the first matching slot
             var firstMatchedSlot = users[0].AvailableTimes
                 .IntersectBy(
                     users[1].AvailableTimes
